@@ -1,25 +1,37 @@
-import { useSignal } from "@preact/signals";
-import Counter from "../islands/Counter.tsx";
+import { generate } from "../lib/crypto.ts";
 
-export default function Home() {
-  const count = useSignal(3);
+export default async function Home() {
+  const pair = await generate();
   return (
-    <div class="px-4 py-8 mx-auto bg-[#86efac]">
-      <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center">
-        <img
-          class="my-6"
-          src="/logo.svg"
-          width="128"
-          height="128"
-          alt="the Fresh logo: a sliced lemon dripping with juice"
-        />
-        <h1 class="text-4xl font-bold">Welcome to Fresh</h1>
-        <p class="my-4">
-          Try updating this message in the
-          <code class="mx-2">./routes/index.tsx</code> file, and refresh.
-        </p>
-        <Counter count={count} />
-      </div>
-    </div>
+    <main class="prose">
+      <h1>Pub Sub</h1>
+      <h2>POST /api/topics</h2>
+      <p>Returns `topicId` and `secret`. secret is for topic owner.</p>
+      <h2>Publisher</h2>
+      <code>
+        {`
+        const ws = new WebSocket("/api/topics/:topicId?secret=xxxx");
+        ws.send({ anything: "to publish" });
+      `}
+      </code>
+      <h2>Subscriber</h2>
+      <code>
+        {`
+        const ws = new WebSocket("/api/topics/:topicId");
+        ws.onmessage = (event) => {
+          console.log(event.data);
+        };
+        // Subscriber can publish under 'pub'
+        // use this for interaction.
+        ws.send({ pub: "😀" });
+      `}
+      </code>
+      <h1>Sample apps</h1>
+      <p>
+        <a href={`simplechat/${pair.topicId}?secret=${pair.secret}`}>
+          Simple Chat
+        </a>
+      </p>
+    </main>
   );
 }

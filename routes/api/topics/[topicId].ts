@@ -19,14 +19,15 @@ export const handler: Handlers = {
       channel.close();
     };
     channel.onmessage = (ev) => {
-      socket.send(ev.data);
+      socket.send(JSON.stringify(ev.data));
     };
 
     socket.onmessage = (ev) => {
+      const data = JSON.parse(ev.data);
       if (verified === "writable") {
-        channel.postMessage(ev.data);
-      } else if ("pub" in ev.data) {
-        channel.postMessage({ pub: ev.data.pub });
+        channel.postMessage(data);
+      } else if ("pub" in data) {
+        channel.postMessage({ pub: data.pub });
       }
     };
     return response;

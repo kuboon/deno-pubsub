@@ -1,7 +1,7 @@
 import { decodeBase64Url, encodeBase64Url } from "@std/encoding/base64url";
 import { assertEquals } from "@std/assert";
 
-type Pair = { topicId: string; secret: string };
+export type Pair = { topicId: string; secret: string };
 export async function generate(
   keyStr = Deno.env.get("HMAC_KEY"),
 ): Promise<Pair> {
