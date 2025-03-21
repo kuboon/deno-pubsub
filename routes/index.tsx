@@ -5,6 +5,13 @@ export default async function Home() {
   return (
     <main class="prose">
       <h1>Pub Sub</h1>
+      <p>
+        <a href={`simplechat/${pair.topicId}?secret=${pair.secret}`}>
+          Simple Chat
+        </a>
+      </p>
+
+      <h1>API</h1>
       <h2>POST /api/topics</h2>
       <p>Returns `topicId` and `secret`. secret is for topic owner.</p>
       <h2>Publisher</h2>
@@ -20,12 +27,6 @@ ws.onmessage = (event) => {
 // Subscriber can publish under 'pub'
 // use this for interaction.
 ws.send(JSON.stringify({ pub: "😀" }));`}</code></pre>
-      <h1>Sample apps</h1>
-      <p>
-        <a href={`simplechat/${pair.topicId}?secret=${pair.secret}`}>
-          Simple Chat
-        </a>
-      </p>
     </main>
   );
 }
