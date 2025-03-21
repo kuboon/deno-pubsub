@@ -8,24 +8,18 @@ export default async function Home() {
       <h2>POST /api/topics</h2>
       <p>Returns `topicId` and `secret`. secret is for topic owner.</p>
       <h2>Publisher</h2>
-      <code>
-        {`
-        const ws = new WebSocket("/api/topics/:topicId?secret=xxxx");
-        ws.send({ anything: "to publish" });
-      `}
-      </code>
+      <pre><code>{`const ws = new WebSocket("/api/topics/:topicId?secret=xxxx");
+ws.send(JSON.stringify({ anything: "to publish" }));`}</code></pre>
       <h2>Subscriber</h2>
-      <code>
-        {`
-        const ws = new WebSocket("/api/topics/:topicId");
-        ws.onmessage = (event) => {
-          console.log(event.data);
-        };
-        // Subscriber can publish under 'pub'
-        // use this for interaction.
-        ws.send({ pub: "😀" });
-      `}
-      </code>
+      <pre><code>{`const ws = new WebSocket("/api/topics/:topicId");
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  // data is the published data.
+  console.log(data.anything);
+}
+// Subscriber can publish under 'pub'
+// use this for interaction.
+ws.send(JSON.stringify({ pub: "😀" }));`}</code></pre>
       <h1>Sample apps</h1>
       <p>
         <a href={`simplechat/${pair.topicId}?secret=${pair.secret}`}>

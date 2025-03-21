@@ -9,7 +9,7 @@ export default function App({ Component }: PageProps) {
         <link rel="stylesheet" href="/styles.css" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>
+      <body class="container m-8">
         <Component />
       </body>
     </html>
