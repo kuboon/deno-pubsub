@@ -18,14 +18,15 @@ export const handler: Handlers = {
 export default function SimpleChatPage(props: PageProps<Pair>) {
   const { topicId, secret } = props.data;
   const url = new URL(`/simplechat/${topicId}`, props.url);
-  const inputTag =
-    `<input type="text" class="input" value="${url.href}" readonly onfocus="this.select();"></input>`;
-  // deno-lint-ignore react-no-danger
-  const span = <span dangerouslySetInnerHTML={{ __html: inputTag }} />;
   return (
     <main id="simplechat">
       <h1>SimpleChat</h1>
-      <p>Join URL: {span}</p>
+      <p class="my-4">
+        <label class="input w-2xl">
+          <span class="label">Join URL</span>
+          <input id="join-url" type="text" class="w-full" value={url.href} readonly></input>
+        </label>
+      </p>
       <SimpleChat topicId={topicId} secret={secret} />
     </main>
   );
