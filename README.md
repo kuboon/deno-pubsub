@@ -13,20 +13,6 @@ for interaction.
 
 ---
 
-### Develop on your local machine
-
-Make sure to install Deno: https://deno.land/manual/getting_started/installation
-
-Then start the project:
-
-```
-deno task start
-```
-
-This will watch the project directory and restart as necessary.
-
----
-
 ### Usage
 
 #### Create a Topic
@@ -37,13 +23,25 @@ include:
 - `topicId`: The unique identifier for the topic.
 - `secret`: A secret key for the topic owner.
 
+Example:
+
+```javascript
+const apiBase = "https://pubsub.kbn.one/api/topics";
+const pair = await fetch(apiBase, { method: "POST" }).then((x) => x.json());
+console.log(pair); // { topicId: "abc123", secret: "xyz456" }
+```
+
 #### Publisher
 
 To publish messages to a topic, connect to the WebSocket endpoint with the
 `topicId` and `secret`:
 
 ```javascript
-const ws = new WebSocket("/api/topics/:topicId?secret=xxxx");
+const apiBase = "https://pubsub.kbn.one/api/topics";
+const pair = await fetch(apiBase, { method: "POST" }).then((x) => x.json());
+const subscriberUrl = `${apiBase}/${pair.topicId}`;
+console.log("subscriberUrl", subscriberUrl);
+const ws = new WebSocket(`${subscriberUrl}?secret=${pair.secret}`);
 ws.send(JSON.stringify({ anything: "to publish" }));
 ```
 
@@ -52,7 +50,7 @@ ws.send(JSON.stringify({ anything: "to publish" }));
 To subscribe to a topic, connect to the WebSocket endpoint with the `topicId`:
 
 ```javascript
-const ws = new WebSocket("/api/topics/:topicId");
+const ws = new WebSocket("https://pubsub.kbn.one/api/topics/:topicId");
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   // data is the published data.
@@ -72,9 +70,23 @@ ws.send(JSON.stringify({ pub: "😀" }));
 
 Visit the `Simple Chat` page to see an example of a pub-sub interaction:
 
-```
+```html
 <a href="simplechat/:topicId?secret=xxxx">Simple Chat</a>
 ```
 
 Replace `:topicId` and `xxxx` with the values returned from the
 `POST /api/topics` request.
+
+---
+
+### Develop on your local machine
+
+Make sure to install Deno: https://deno.land/manual/getting_started/installation
+
+Then start the project:
+
+```bash
+deno task start
+```
+
+This will watch the project directory and restart as necessary.
