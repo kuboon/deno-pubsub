@@ -59,11 +59,18 @@ export default function SimpleChat({ topicId, secret }: Pair) {
           <div key={i} class={`chat ${msg.mine ? "chat-end" : "chat-start"}`}>
             <div class="chat-header">
               {msg.name}
-              <time class="text-xs opacity-50 ml-2" datetime={new Date(msg.timestamp).toISOString()}>
+              <time
+                class="text-xs opacity-50 ml-2"
+                datetime={new Date(msg.timestamp).toISOString()}
+              >
                 {new Date(msg.timestamp).toLocaleString()}
               </time>
             </div>
-            <div class={`whitespace-pre-wrap chat-bubble ${msg.mine ? "chat-bubble-primary" : ""}`}>
+            <div
+              class={`whitespace-pre-wrap chat-bubble ${
+                msg.mine ? "chat-bubble-primary" : ""
+              }`}
+            >
               {msg.message}
             </div>
           </div>
