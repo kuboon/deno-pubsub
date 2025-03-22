@@ -1,3 +1,7 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "daisyui";
+
 #simplechat {
   h1 {
     @apply text-2xl font-bold;
