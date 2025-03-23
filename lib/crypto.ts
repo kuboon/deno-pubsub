@@ -21,22 +21,21 @@ export async function verify(
   pair: Pair,
   keyStr = Deno.env.get("HMAC_KEY"),
 ): Promise<"invalid" | "readable" | "writable"> {
-  let topicIdRaw_, secretRaw_;
+  let topicIdRaw, secretRaw;
   try {
-    topicIdRaw_ = decodeBase64Url(pair.topicId);
-    secretRaw_ = decodeBase64Url(pair.secret || "");
+    topicIdRaw = decodeBase64Url(pair.topicId);
+    secretRaw = decodeBase64Url(pair.secret || "");
   } catch {
     return "invalid";
   }
-  const topicIdRaw = topicIdRaw_;
-  const secretRaw = secretRaw_;
+  if (!pair.secret) return "readable";
   const verified = await crypto.subtle.verify(
     { name: "HMAC" },
     await getHmacKey(keyStr),
     secretRaw,
     topicIdRaw,
   );
-  return verified ? "writable" : "readable";
+  return verified ? "writable" : "invalid";
 }
 
 const algorithm = {

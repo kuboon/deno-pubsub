@@ -71,11 +71,8 @@ ws.send(JSON.stringify({ pub: "😀" }));
 Visit the `Simple Chat` page to see an example of a pub-sub interaction:
 
 ```html
-<a href="simplechat/:topicId?secret=xxxx">Simple Chat</a>
+<a href="simplechat/">Simple Chat</a>
 ```
-
-Replace `:topicId` and `xxxx` with the values returned from the
-`POST /api/topics` request.
 
 ---
 

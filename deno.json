@@ -28,6 +28,7 @@
     "@std/encoding": "jsr:@std/encoding@^1.0.7",
     "@tailwindcss/typography": "npm:@tailwindcss/typography@^0.5.16",
     "daisyui": "npm:daisyui@^5.0.4",
+    "marked": "npm:marked@^15.0.7",
     "preact": "https://esm.sh/preact@10.22.0",
     "preact/": "https://esm.sh/preact@10.22.0/",
     "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",

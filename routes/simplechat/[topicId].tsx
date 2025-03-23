@@ -21,13 +21,19 @@ export default function SimpleChatPage(props: PageProps<Pair>) {
   return (
     <main id="simplechat">
       <h1>SimpleChat</h1>
-      <p class="my-4">
-        <label class="input w-2xl">
-          <span class="label">Join URL</span>
-          <input id="join-url" type="text" class="w-full" value={url.href} readonly></input>
-        </label>
-      </p>
+      {secret && <JoinUrl url={url.href} />}
       <SimpleChat topicId={topicId} secret={secret} />
     </main>
+  );
+}
+
+function JoinUrl({ url }: { url: string }) {
+  return (
+    <p class="my-4">
+      <label class="input w-2xl">
+        <span class="label">Join URL</span>
+        <input id="join-url" type="text" class="w-full" value={url} readonly />
+      </label>
+    </p>
   );
 }

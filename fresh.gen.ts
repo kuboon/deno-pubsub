@@ -7,7 +7,9 @@ import * as $_app from "./routes/_app.tsx";
 import * as $api_topics from "./routes/api/topics.ts";
 import * as $api_topics_topicId_ from "./routes/api/topics/[topicId].ts";
 import * as $index from "./routes/index.tsx";
+import * as $presen_topicId_ from "./routes/presen/[topicId].tsx";
 import * as $simplechat_topicId_ from "./routes/simplechat/[topicId].tsx";
+import * as $Presen from "./islands/Presen.tsx";
 import * as $SimpleChat from "./islands/SimpleChat.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -18,9 +20,11 @@ const manifest = {
     "./routes/api/topics.ts": $api_topics,
     "./routes/api/topics/[topicId].ts": $api_topics_topicId_,
     "./routes/index.tsx": $index,
+    "./routes/presen/[topicId].tsx": $presen_topicId_,
     "./routes/simplechat/[topicId].tsx": $simplechat_topicId_,
   },
   islands: {
+    "./islands/Presen.tsx": $Presen,
     "./islands/SimpleChat.tsx": $SimpleChat,
   },
   baseUrl: import.meta.url,

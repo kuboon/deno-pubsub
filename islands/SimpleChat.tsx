@@ -12,7 +12,8 @@ export default function SimpleChat({ topicId, secret }: Pair) {
 
   useEffect(() => {
     if (!IS_BROWSER) return;
-    document.getElementById("join-url")!.onfocus = (e) => (e.target as HTMLInputElement).select();
+    document.getElementById("join-url")!.onfocus = (e) =>
+      (e.target as HTMLInputElement).select();
     if (ws && ws.readyState === WebSocket.OPEN) return;
     const ws_ = new WebSocket(`/api/topics/${topicId}?secret=${secret}`);
     setWs(ws_);
@@ -35,10 +36,12 @@ export default function SimpleChat({ topicId, secret }: Pair) {
   return (
     <>
       <div class="messages">
-        {messages.map((msg) => <ChatMessage
-          key={msg.timestamp}
-          message={msg}
-        />)}
+        {messages.map((msg) => (
+          <ChatMessage
+            key={msg.timestamp}
+            message={msg}
+          />
+        ))}
       </div>
       <MessageForm
         onSubmit={(message) => {

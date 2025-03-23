@@ -4,8 +4,13 @@ const origin = "https://pubsub.kbn.one";
 export default async function Home() {
   const pair = await generate();
   return (
-    <main class="prose">
+    <main class="prose m-8">
       <h1>Pub Sub</h1>
+      <p>
+        <a href={`presen/${pair.topicId}?secret=${pair.secret}`}>
+          Presentation
+        </a>
+      </p>
       <p>
         <a href={`simplechat/${pair.topicId}?secret=${pair.secret}`}>
           Simple Chat
