@@ -60,9 +60,10 @@ function Presen({ topicId, secret }: Pair) {
 
   const [wsSignal, setWsSignal] = useState<WebSocket | undefined>(undefined);
   const [reactionsSignal, setReactionsSignal] = useState<
-    { reaction: string; timestamp: number }[]
+    { reaction: string; timestamp: Date }[]
   >([]);
   const [title, setTitle] = useState("");
+  const [isLeftPanelVisible, setIsLeftPanelVisible] = useState(true);
 
   useEffect(() => {
     if (wsSignal && wsSignal.readyState === WebSocket.OPEN) return;
@@ -75,7 +76,7 @@ function Presen({ topicId, secret }: Pair) {
       if (data.reaction) {
         setReactionsSignal((prev) => [
           ...prev,
-          { reaction: data.reaction, timestamp: Date.now() },
+          { reaction: data.reaction, timestamp: new Date() },
         ]);
       }
     });
@@ -97,7 +98,7 @@ function Presen({ topicId, secret }: Pair) {
 
   return (
     <div class="flex w-screen h-screen">
-      <div id="left" class="m-8 flex flex-col">
+      <div id="left" class={`m-8 flex flex-col ${isLeftPanelVisible ? "" : "hidden"}`}>
         <JoinUrl url={`${location.origin}/presen/${topicId}`} />
         <Title value={title} onChange={setTitle} />
         <div class="flex-1">
@@ -105,6 +106,12 @@ function Presen({ topicId, secret }: Pair) {
         </div>
       </div>
       <div id="right" class="flex-1 h-screen overflow-auto">
+        <button
+          class="btn btn-primary m-4"
+          onClick={() => setIsLeftPanelVisible(!isLeftPanelVisible)}
+        >
+          {isLeftPanelVisible ? '<' : '>'}
+        </button>
         <div {...bind()} ref={contentRef} class="p-12 prose">
           <div
             class="presentation"
