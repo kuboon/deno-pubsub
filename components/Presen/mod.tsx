@@ -58,23 +58,23 @@ function Presen({ topicId, secret }: Pair) {
     contentRef,
   });
 
-  const [wsSignal, setWsSignal] = useState<WebSocket | undefined>(undefined);
-  const [reactionsSignal, setReactionsSignal] = useState<
+  const [ws, setWs] = useState<WebSocket | undefined>(undefined);
+  const [reactions, setReactions] = useState<
     { reaction: string; timestamp: Date }[]
   >([]);
   const [title, setTitle] = useState("");
   const [isLeftPanelVisible, setIsLeftPanelVisible] = useState(true);
 
   useEffect(() => {
-    if (wsSignal && wsSignal.readyState === WebSocket.OPEN) return;
+    if (ws && ws.readyState === WebSocket.OPEN) return;
 
     const ws_ = new WebSocket(`/api/topics/${topicId}?secret=${secret}`);
-    setWsSignal(ws_);
+    setWs(ws_);
 
     ws_.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
       if (data.reaction) {
-        setReactionsSignal((prev) => [
+        setReactions((prev) => [
           ...prev,
           { reaction: data.reaction, timestamp: new Date() },
         ]);
@@ -91,8 +91,8 @@ function Presen({ topicId, secret }: Pair) {
   }, []);
 
   useEffect(() => {
-    if (wsSignal) {
-      wsSignal.send(JSON.stringify({ currentPage, currentSection }));
+    if (ws) {
+      ws.send(JSON.stringify({ currentPage, currentSection }));
     }
   }, [currentPage, currentSection]);
 
@@ -122,7 +122,7 @@ function Presen({ topicId, secret }: Pair) {
             dangerouslySetInnerHTML={{ __html: pages[currentPage] }}
           />
           <div class="reactions">
-            {reactionsSignal.map((reaction, index) => (
+            {reactions.map((reaction, index) => (
               <div key={index} class="badge badge-accent m-1">
                 {reaction.reaction}
               </div>
@@ -131,8 +131,8 @@ function Presen({ topicId, secret }: Pair) {
         </div>
         <ReactionSender
           onSubmit={(reaction) => {
-            if (wsSignal && wsSignal.readyState === WebSocket.OPEN) {
-              wsSignal.send(JSON.stringify({ reaction }));
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ reaction }));
             }
           }}
         />
