@@ -14,7 +14,7 @@ export const handler: Handlers = {
     }
 
     const kv = await Deno.openKv();
-    await kv.set([topicId], body);
+    await kv.set([topicId], body, { expireIn: 7 * 24 * 60 * 60 * 1000 });
     return new Response(null, { status: 201 });
   },
   async GET(req, ctx) {
