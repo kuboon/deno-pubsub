@@ -4,22 +4,21 @@ import { verify } from "../../../lib/crypto.ts";
 
 export const handler: Handlers = {
   async POST(req, ctx) {
-    const { topicId } = ctx.params;
-    const body = await req.json();
-    const pair = { topicId, secret: req.headers.get("secret") || "" };
-    const status = await verify(pair);
-
-    if (status === "invalid") {
+    const topicId = ctx.params["topicId"];
+    const secret = new URL(req.url).searchParams.get("secret") || "";
+    const verified = await verify({ topicId, secret });
+    if (verified !== "writable") {
       return new Response("Invalid secret", { status: 403 });
     }
 
+    const body = await req.json();
     const kv = await Deno.openKv();
     await kv.set([topicId], body, { expireIn: 7 * 24 * 60 * 60 * 1000 });
     return new Response(null, { status: 201 });
   },
   async GET(req, ctx) {
     const topicId = ctx.params["topicId"];
-    const secret = req.headers.get("secret") || "";
+    const secret = new URL(req.url).searchParams.get("secret") || "";
     const verified = await verify({ topicId, secret });
     if (verified === "invalid") {
       return new Response("Not Found", { status: 404 });
@@ -27,7 +26,7 @@ export const handler: Handlers = {
     if (req.headers.get("upgrade") !== "websocket") {
       const kv = await Deno.openKv();
       const entry = await kv.get([topicId]);
-      if (entry.value === null) {
+      if (entry.versionstamp === null) {
         return new Response("Not found", { status: 404 });
       }
       return Response.json(entry.value);
