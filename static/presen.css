@@ -4,7 +4,8 @@
 
 #presen {
   #left {
-    transition: min-width, width 0.5s;
+    transition-property: min-width, width;
+    transition-duration: 0.5s;
     min-width: 370px;
     width: 50%;
     &.collapse {
