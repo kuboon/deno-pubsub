@@ -42,6 +42,7 @@
   },
   "nodeModulesDir": "auto",
   "unstable": [
-    "broadcast-channel"
+    "broadcast-channel",
+    "kv"
   ]
 }
