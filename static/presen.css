@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "daisyui";
+
+#presen {
+  #left {
+    transition: min-width,width 0.5s;
+    min-width: 370px;
+    width: 50%;
+    &.collapse {
+      min-width: 0;
+      width: 0;
+      overflow: hidden;
+   }
+  }
+  #right {
+    > button {
+      position: absolute;
+      left: 10px;
+    }
+  }
+}
