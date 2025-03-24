@@ -19,7 +19,8 @@ export const handler: Handlers = {
   },
   async GET(req, ctx) {
     const topicId = ctx.params["topicId"];
-    const verified = await verify({ topicId, secret: "" });
+    const secret = req.headers.get("secret") || "";
+    const verified = await verify({ topicId, secret });
     if (verified === "invalid") {
       return new Response("Not Found", { status: 404 });
     }
