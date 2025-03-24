@@ -8,14 +8,14 @@ import { useEffect, useRef, useState } from "preact/hooks";
 function JoinUrl({ url }: { url: string }) {
   return (
     <p class="my-4">
-      <label class="input w-2xl">
+      <label class="input w-full">
         <span class="label">Join URL</span>
         <input
           id="join-url"
           type="text"
           class="w-full"
           value={url}
-          readonly
+          readOnly
           onFocus={(e) => (e.target as HTMLInputElement).select()}
         />
       </label>
@@ -28,7 +28,7 @@ function Title(
 ) {
   return (
     <p class="my-4">
-      <label class="input w-2xl">
+      <label class="input w-full">
         <span class="label">Title</span>
         <input
           type="text"
@@ -60,9 +60,10 @@ function Presen({ topicId, secret }: Pair) {
 
   const [wsSignal, setWsSignal] = useState<WebSocket | undefined>(undefined);
   const [reactionsSignal, setReactionsSignal] = useState<
-    { reaction: string; timestamp: number }[]
+    { reaction: string; timestamp: Date }[]
   >([]);
   const [title, setTitle] = useState("");
+  const [isLeftPanelVisible, setIsLeftPanelVisible] = useState(true);
 
   useEffect(() => {
     if (wsSignal && wsSignal.readyState === WebSocket.OPEN) return;
@@ -75,7 +76,7 @@ function Presen({ topicId, secret }: Pair) {
       if (data.reaction) {
         setReactionsSignal((prev) => [
           ...prev,
-          { reaction: data.reaction, timestamp: Date.now() },
+          { reaction: data.reaction, timestamp: new Date() },
         ]);
       }
     });
@@ -96,15 +97,24 @@ function Presen({ topicId, secret }: Pair) {
   }, [currentPage, currentSection]);
 
   return (
-    <div class="flex w-screen h-screen">
-      <div id="left" class="m-8 flex flex-col">
-        <JoinUrl url={`${location.origin}/presen/${topicId}`} />
-        <Title value={title} onChange={setTitle} />
-        <div class="flex-1">
-          <MarkdownEditor />
+    <div id="presen" class="flex w-screen h-screen">
+      <div id="left" class={`${isLeftPanelVisible ? "" : "collapse"}`}>
+        <div class="p-8 w-full max-w-2xl">
+          <JoinUrl url={`${location.origin}/presen/${topicId}`} />
+          <Title value={title} onChange={setTitle} />
+          <div class="w-full">
+            <MarkdownEditor />
+          </div>
         </div>
       </div>
-      <div id="right" class="flex-1 h-screen overflow-auto">
+      <div id="right" class="bg-base-100 h-screen">
+        <button
+          type="button"
+          class="btn btn-ghost m-4"
+          onClick={() => setIsLeftPanelVisible(!isLeftPanelVisible)}
+        >
+          {isLeftPanelVisible ? "<" : ">"}
+        </button>
         <div {...bind()} ref={contentRef} class="p-12 prose">
           <div
             class="presentation"
