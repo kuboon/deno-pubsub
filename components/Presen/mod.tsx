@@ -1,4 +1,3 @@
-import type { Pair } from "../../lib/crypto.ts";
 import { MarkdownEditor, markdownSignal } from "./MarkdownEditor.tsx";
 import { ReactionSender } from "./ReactionForm.tsx";
 import { usePresentation } from "./usePresenter.tsx";
@@ -47,10 +46,12 @@ export default function paramsLoader() {
   const topicId = url.pathname.split("/").slice(-1)[0];
   const secret = url.searchParams.get("secret") || "";
   url.searchParams.delete("secret");
-  return <Presen topicId={topicId} secret={secret} />;
+  const joinUrl = url.href;
+  const endpoint = `${location.origin}/api/topics/${topicId}?secret=${secret}`;
+  return <Presen joinUrl={joinUrl} endpoint={endpoint} />;
 }
 
-function Presen({ topicId, secret }: Pair) {
+function Presen({ joinUrl, endpoint }: { joinUrl: string; endpoint: string }) {
   const contentRef = useRef<HTMLDivElement>(null);
 
   const { pages, currentPage, currentSection, bind } = usePresentation({
@@ -60,7 +61,7 @@ function Presen({ topicId, secret }: Pair) {
 
   const [ws, setWs] = useState<WebSocket | undefined>(undefined);
   const [reactions, setReactions] = useState<
-    { reaction: string; timestamp: Date }[]
+    { reaction: string; timestamp: number }[]
   >([]);
   const [title, setTitle] = useState("");
   const [isLeftPanelVisible, setIsLeftPanelVisible] = useState(true);
@@ -68,7 +69,7 @@ function Presen({ topicId, secret }: Pair) {
   useEffect(() => {
     if (ws && ws.readyState === WebSocket.OPEN) return;
 
-    const ws_ = new WebSocket(`/api/topics/${topicId}?secret=${secret}`);
+    const ws_ = new WebSocket(endpoint);
     setWs(ws_);
 
     ws_.addEventListener("message", (event) => {
@@ -76,7 +77,7 @@ function Presen({ topicId, secret }: Pair) {
       if (data.reaction) {
         setReactions((prev) => [
           ...prev,
-          { reaction: data.reaction, timestamp: new Date() },
+          { reaction: data.reaction, timestamp: Date.now() },
         ]);
       }
     });
@@ -100,7 +101,7 @@ function Presen({ topicId, secret }: Pair) {
     <div id="presen" class="flex w-screen h-screen">
       <div id="left" class={`${isLeftPanelVisible ? "" : "collapse"}`}>
         <div class="p-8 w-full max-w-2xl">
-          <JoinUrl url={`${location.origin}/presen/${topicId}`} />
+          <JoinUrl url={joinUrl} />
           <Title value={title} onChange={setTitle} />
           <div class="w-full">
             <MarkdownEditor />
