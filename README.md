@@ -41,6 +41,14 @@ const apiBase = "https://pubsub.kbn.one/api/topics";
 const pair = await fetch(apiBase, { method: "POST" }).then((x) => x.json());
 const subscriberUrl = `${apiBase}/${pair.topicId}`;
 console.log("subscriberUrl", subscriberUrl);
+
+await fetch(subscriberUrl + `?secret=${pair.secret}`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ initial: "state" }),
+});
 const ws = new WebSocket(`${subscriberUrl}?secret=${pair.secret}`);
 ws.send(JSON.stringify({ anything: "to publish" }));
 ```
@@ -50,7 +58,9 @@ ws.send(JSON.stringify({ anything: "to publish" }));
 To subscribe to a topic, connect to the WebSocket endpoint with the `topicId`:
 
 ```javascript
-const ws = new WebSocket("https://pubsub.kbn.one/api/topics/:topicId");
+const endpoint = `https://pubsub.kbn.one/api/topics/${topicId}`;
+const initialState = await fetch(endpoint).then((x) => x.json());
+const ws = new WebSocket(endpoint);
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   // data is the published data.
