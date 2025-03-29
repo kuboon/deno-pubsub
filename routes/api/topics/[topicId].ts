@@ -32,6 +32,7 @@ export const handler: Handlers = {
       return Response.json(entry.value);
     }
     const { socket, response } = Deno.upgradeWebSocket(req);
+    const uuid = crypto.randomUUID();
     const channel = new BroadcastChannel(topicId);
     socket.onclose = () => {
       channel.close();
@@ -44,7 +45,7 @@ export const handler: Handlers = {
       if (verified === "writable") {
         channel.postMessage(data);
       } else if ("pub" in data) {
-        channel.postMessage({ pub: data.pub });
+        channel.postMessage({ uuid, pub: data.pub });
       }
     };
     return response;

@@ -1,4 +1,6 @@
-import { computed, signal } from "@preact/signals";
+import { computed, effect, signal } from "@preact/signals";
+
+export { effect };
 
 export const markdownSignal = signal("");
 
