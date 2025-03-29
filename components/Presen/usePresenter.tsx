@@ -1,34 +1,18 @@
-import { type Ref, useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { marked } from "marked";
+import { currentPageSignal, markdownSignal } from "./signals.ts";
+import { publishCurrentPage } from "./connection.ts";
 
-interface UsePresentationProps {
-  markdown: string;
-  contentRef: Ref<HTMLDivElement>;
-}
-
-interface UsePresentationReturn {
-  currentPage: number;
-  currentSection: number;
-  direction: number;
-  pages: string[];
-  bind: () => { onPointerDown: (e: PointerEvent) => void };
-  setCurrentPage: (page: number | ((prev: number) => number)) => void;
-  setCurrentSection: (section: number | ((prev: number) => number)) => void;
-}
-
-export function usePresentation(
-  { markdown, contentRef }: UsePresentationProps,
-): UsePresentationReturn {
-  const [currentPage, setCurrentPage] = useState(0);
+export function PresentationContent() {
   const [currentSection, setCurrentSection] = useState(0);
-  const [direction, setDirection] = useState(1);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const getPages = (content: string) => {
     const html = marked(content) as string;
     return html.split("<hr>").map((page) => page.trim());
   };
 
-  const pages = getPages(markdown);
+  const pages = getPages(markdownSignal.value);
 
   const scrollToSection = (index: number) => {
     if (!contentRef.current) return;
@@ -57,13 +41,11 @@ export function usePresentation(
         if (distance < 50) return;
 
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
-          if (deltaX > 0 && currentPage > 0) {
-            setDirection(-1);
-            setCurrentPage((p) => p - 1);
+          if (deltaX > 0 && currentPageSignal.value > 0) {
+            currentPageSignal.value -= 1;
           }
-          if (deltaX < 0 && currentPage < pages.length - 1) {
-            setDirection(1);
-            setCurrentPage((p) => p + 1);
+          if (deltaX < 0 && currentPageSignal.value < pages.length - 1) {
+            currentPageSignal.value += 1;
           }
         }
 
@@ -87,15 +69,15 @@ export function usePresentation(
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
         case "ArrowLeft":
-          if (currentPage > 0) {
-            setDirection(-1);
-            setCurrentPage((p) => p - 1);
+          if (currentPageSignal.value > 0) {
+            currentPageSignal.value -= 1;
+            publishCurrentPage();
           }
           break;
         case "ArrowRight":
-          if (currentPage < pages.length - 1) {
-            setDirection(1);
-            setCurrentPage((p) => p + 1);
+          if (currentPageSignal.value < pages.length - 1) {
+            currentPageSignal.value += 1;
+            publishCurrentPage();
           }
           break;
         case "ArrowUp":
@@ -103,18 +85,17 @@ export function usePresentation(
           break;
         case "ArrowDown":
           setCurrentSection((s) => s + 1);
-
           break;
       }
     };
 
     globalThis.addEventListener("keydown", handleKeyDown);
     return () => globalThis.removeEventListener("keydown", handleKeyDown);
-  }, [currentPage, pages.length, currentSection]);
+  }, [pages.length, currentSection]);
 
   useEffect(() => {
     setCurrentSection(0);
-  }, [currentPage]);
+  }, [currentPageSignal.value]);
 
   useEffect(() => {
     if (currentSection >= 0) {
@@ -122,13 +103,13 @@ export function usePresentation(
     }
   }, [currentSection]);
 
-  return {
-    currentPage,
-    currentSection,
-    direction,
-    pages,
-    bind,
-    setCurrentPage,
-    setCurrentSection,
-  };
+  return (
+    <div {...bind()} ref={contentRef} class="p-12 prose">
+      <div
+        class="presentation"
+        // deno-lint-ignore react-no-danger
+        dangerouslySetInnerHTML={{ __html: pages[currentPageSignal.value] }}
+      />
+    </div>
+  );
 }

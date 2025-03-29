@@ -19,5 +19,20 @@
       position: absolute;
       left: 10px;
     }
+    .reaction-item {
+      font-size: 5rem;
+      position: absolute;
+      animation: 1.5s forwards move-up-fade-out;
+    }
+  }
+}
+@keyframes move-up-fade-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-20px);
+    opacity: 0;
   }
 }
