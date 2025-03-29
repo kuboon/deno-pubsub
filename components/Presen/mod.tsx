@@ -106,7 +106,7 @@ function Presen(
         <div class="p-8 w-full h-full max-w-2xl flex flex-col gap-4">
           <JoinUrl url={joinUrl} />
           <div class="flex-grow">
-            <MarkdownEditor />
+            <MarkdownEditor publisher={publisher} />
           </div>
         </div>
       </div>
