@@ -57,9 +57,11 @@ export function PresentationContent() {
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
           if (deltaX > 0 && currentPageSignal.value > 0) {
             currentPageSignal.value -= 1;
+            publishCurrentPage();
           }
           if (deltaX < 0 && currentPageSignal.value < pages.length - 1) {
             currentPageSignal.value += 1;
+            publishCurrentPage();
           }
         }
 

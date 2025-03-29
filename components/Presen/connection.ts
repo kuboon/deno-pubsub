@@ -7,8 +7,10 @@ import {
 
 let ws: WebSocket | undefined;
 let endpoint: string | undefined;
+let publisher = false;
 export function setEndpoint(newEndpoint: string) {
   endpoint = newEndpoint;
+  publisher = endpoint.includes("secret");
   initializeWebSocket();
 }
 
@@ -76,6 +78,7 @@ function isWebSocketOpen(ws: WebSocket | undefined): ws is WebSocket {
 
 export async function publishMarkdown() {
   if (!endpoint) throw new Error("Endpoint is not set");
+  if(!publisher) return;
   await fetch(endpoint, {
     method: "POST",
     body: JSON.stringify({ markdown: markdownSignal.peek() }),
@@ -98,7 +101,7 @@ export async function getMarkdown() {
 }
 
 export function publishCurrentPage() {
-  if (isWebSocketOpen(ws)) {
+  if (publisher && isWebSocketOpen(ws)) {
     ws.send(
       JSON.stringify({ currentPage: currentPageSignal.peek() }),
     );
