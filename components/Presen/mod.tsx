@@ -1,5 +1,5 @@
 import { MarkdownEditor } from "./MarkdownEditor.tsx";
-import { PresentationContent } from "./usePresenter.tsx";
+import { PresentationContent } from "./PresentationContent.tsx";
 import { getMarkdown, setEndpoint } from "./connection.ts";
 
 import { useState } from "preact/hooks";
@@ -33,6 +33,15 @@ const defaultMarkdown = `# Markdown Presentation Tool
 2. このように書きます
 - 箇条書きリスト
 - このように書きます
+
+## Mermaid
+\`\`\`mermaid
+graph LR
+    A --- B
+    B-->C[fa:fa-ban forbidden]
+    B-->D(fa:fa-spinner);
+\`\`\`
+
 ---
 # コードとテーブル
 ## コードブロック
@@ -101,7 +110,7 @@ function Presen(
           </div>
         </div>
       </div>
-      <div id="right" class="bg-base-100 h-screen">
+      <div id="divider" class="divider divider-horizontal">
         <button
           type="button"
           class="btn btn-ghost m-4"
@@ -109,6 +118,8 @@ function Presen(
         >
           {isLeftPanelVisible ? "<" : ">"}
         </button>
+      </div>
+      <div id="right" class="bg-base-100 h-screen overflow-y-auto">
         <ReactionFrame>
           <PresentationContent />
         </ReactionFrame>
