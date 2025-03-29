@@ -1,6 +1,7 @@
-import { MarkdownEditor, markdownSignal } from "./MarkdownEditor.tsx";
+import { MarkdownEditor } from "./MarkdownEditor.tsx";
 import { ReactionSender } from "./ReactionForm.tsx";
 import { usePresentation } from "./usePresenter.tsx";
+import { markdownSignal, currentPageSignal } from "./signals.ts";
 
 import { useEffect, useRef, useState } from "preact/hooks";
 
@@ -54,7 +55,7 @@ export default function paramsLoader() {
 function Presen({ joinUrl, endpoint }: { joinUrl: string; endpoint: string }) {
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const { pages, currentPage, currentSection, bind } = usePresentation({
+  const { pages, currentSection, bind } = usePresentation({
     markdown: markdownSignal.value,
     contentRef,
   });
@@ -93,17 +94,17 @@ function Presen({ joinUrl, endpoint }: { joinUrl: string; endpoint: string }) {
 
   useEffect(() => {
     if (ws) {
-      ws.send(JSON.stringify({ currentPage, currentSection }));
+      ws.send(JSON.stringify({ currentPage: currentPageSignal.value, currentSection }));
     }
-  }, [currentPage, currentSection]);
+  }, [currentPageSignal.value, currentSection]);
 
   return (
     <div id="presen" class="flex w-screen h-screen">
       <div id="left" class={`${isLeftPanelVisible ? "" : "collapse"}`}>
-        <div class="p-8 w-full max-w-2xl">
+        <div class="p-8 w-full h-full max-w-2xl flex flex-col">
           <JoinUrl url={joinUrl} />
           <Title value={title} onChange={setTitle} />
-          <div class="w-full">
+          <div class="w-full flex-grow">
             <MarkdownEditor />
           </div>
         </div>
@@ -120,7 +121,7 @@ function Presen({ joinUrl, endpoint }: { joinUrl: string; endpoint: string }) {
           <div
             class="presentation"
             // deno-lint-ignore react-no-danger
-            dangerouslySetInnerHTML={{ __html: pages[currentPage] }}
+            dangerouslySetInnerHTML={{ __html: pages[currentPageSignal.value] }}
           />
           <div class="reactions">
             {reactions.map((reaction, index) => (
