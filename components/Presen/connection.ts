@@ -45,6 +45,9 @@ function initializeWebSocket() {
       if (data.currentPage !== undefined) {
         currentPageSignal.value = data.currentPage;
       }
+      if (data.markdown !== undefined) {
+        markdownSignal.value = data.markdown;
+      }
       if (data.pub && data.pub.reaction) {
         const reaction: Reaction = data.pub.reaction;
         reactionsSignal.value = [
@@ -71,14 +74,6 @@ function isWebSocketOpen(ws: WebSocket | undefined): ws is WebSocket {
   return ws.readyState === WebSocket.OPEN;
 }
 
-export function publishCurrentPage() {
-  if (isWebSocketOpen(ws)) {
-    ws.send(
-      JSON.stringify({ currentPage: currentPageSignal.peek() }),
-    );
-  }
-}
-
 export async function publishMarkdown() {
   if (!endpoint) throw new Error("Endpoint is not set");
   await fetch(endpoint, {
@@ -88,6 +83,26 @@ export async function publishMarkdown() {
       "Content-Type": "application/json",
     },
   });
+  if (isWebSocketOpen(ws)) {
+    ws.send(
+      JSON.stringify({ markdown: markdownSignal.peek() }),
+    );
+  }
+}
+export async function getMarkdown() {
+  if (!endpoint) throw new Error("Endpoint is not set");
+  const response = await fetch(endpoint);
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.markdown;
+}
+
+export function publishCurrentPage() {
+  if (isWebSocketOpen(ws)) {
+    ws.send(
+      JSON.stringify({ currentPage: currentPageSignal.peek() }),
+    );
+  }
 }
 
 export function publishReaction(reaction: Reaction) {
