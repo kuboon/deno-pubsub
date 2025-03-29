@@ -16,7 +16,7 @@ export function MarkdownEditor({ publisher }: { publisher: boolean }) {
     <>
       <textarea
         ref={textRef}
-        class="textarea textarea-bordered w-full h-full"
+        class="textarea textarea-bordered flex-grow w-full"
         value={markdownSignal}
         readOnly={!publisher}
         onInput={() => (locked && updateMarkdown())}
@@ -24,9 +24,9 @@ export function MarkdownEditor({ publisher }: { publisher: boolean }) {
       >
       </textarea>
       {publisher && (
-        <div class="flex place-content-end">
+        <div class="flex place-content-end gap-4">
           <label class="fieldset-label">
-            Lock
+            auto save
             <input
               type="checkbox"
               class="toggle"

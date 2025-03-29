@@ -128,7 +128,7 @@ export function PresentationContent() {
     <div
       {...bind()}
       ref={contentRef}
-      class="presentation p-12 prose"
+      class="presentation p-8 prose"
       // deno-lint-ignore react-no-danger
       dangerouslySetInnerHTML={{ __html }}
     />

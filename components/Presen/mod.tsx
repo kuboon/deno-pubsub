@@ -98,28 +98,23 @@ export default function paramsLoader() {
 function Presen(
   { joinUrl, publisher }: { joinUrl: string; publisher: boolean },
 ) {
-  const [isLeftPanelVisible, setIsLeftPanelVisible] = useState(publisher);
+  const [showPanel, setShowPanel] = useState(publisher);
 
   return (
-    <div id="presen" class="flex w-screen h-screen">
-      <div id="left" class={`${isLeftPanelVisible ? "" : "collapse"}`}>
+    <div
+      id="presen"
+      class={`w-screen h-screen ${showPanel ? "show-panel" : ""}`}
+    >
+      <div class="panel">
         <div class="p-8 w-full h-full max-w-2xl flex flex-col gap-4">
           <JoinUrl url={joinUrl} />
-          <div class="flex-grow">
-            <MarkdownEditor publisher={publisher} />
-          </div>
+          <MarkdownEditor publisher={publisher} />
         </div>
       </div>
-      <div id="divider" class="divider divider-horizontal">
-        <button
-          type="button"
-          class="btn btn-ghost m-4"
-          onClick={() => setIsLeftPanelVisible(!isLeftPanelVisible)}
-        >
-          {isLeftPanelVisible ? "<" : ">"}
-        </button>
+      <div class="center" onClick={() => setShowPanel(!showPanel)}>
+        <button type="button" class="arrow" />
       </div>
-      <div id="right" class="bg-base-100 h-screen overflow-y-auto">
+      <div class="content bg-base-100 h-screen overflow-y-auto">
         <ReactionFrame>
           <PresentationContent />
         </ReactionFrame>

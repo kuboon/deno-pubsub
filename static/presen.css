@@ -2,19 +2,75 @@
 @plugin "@tailwindcss/typography";
 @plugin "daisyui";
 
+.arrow {
+  width: 0.5rem;
+  height: 0.5rem;
+  transition-property: all;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+  box-shadow: 2px 2px;
+}
 #presen {
-  #left {
-    transition-property: min-width, width;
+  display: flex;
+  .panel {
+    transition-property: all;
     transition-duration: 0.5s;
-    min-width: 370px;
-    width: 50%;
-    &.collapse {
+  }
+  .center {
+    background-color: var(--color-base-300);
+    display: grid;
+    place-items: center;
+  }
+  @media (min-aspect-ratio: 1/1) {
+    .panel {
       min-width: 0;
       width: 0;
       overflow: hidden;
     }
+    .arrow {
+      transform: rotate(-45deg);
+    }
+
+    &.show-panel {
+      .panel {
+        min-width: 370px;
+        width: 50%;
+      }
+      .arrow {
+        transform: rotate(135deg);
+      }
+    }
+    .center {
+      height: 100%;
+      width: 20px;
+    }
   }
-  #right {
+  @media (max-aspect-ratio: 1/1) {
+    flex-direction: column;
+    .panel {
+      min-height: 0;
+      height: 0;
+      overflow: hidden;
+    }
+    .arrow {
+      transform: rotate(45deg);
+    }
+    &.show-panel {
+      .panel {
+        min-height: 370px;
+        height: 90%;
+      }
+      .arrow {
+        transform: rotate(225deg);
+      }
+    }
+    .center {
+      width: 100%;
+      height: 20px;
+    }
+  }
+  .content {
     > button {
       position: absolute;
       left: 10px;
