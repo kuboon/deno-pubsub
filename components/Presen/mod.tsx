@@ -1,10 +1,9 @@
 import { MarkdownEditor } from "./MarkdownEditor.tsx";
-import { ReactionSender } from "./ReactionForm.tsx";
-import { usePresentation } from "./usePresenter.tsx";
-import { markdownSignal, currentPageSignal, titleSignal } from "./signals.ts";
-import { setEndpoint, publishTitle, publishReaction } from "./connection.ts";
+import { PresentationContent } from "./usePresenter.tsx";
+import { setEndpoint } from "./connection.ts";
 
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
+import ReactionFrame from "./ReactionFrame.tsx";
 
 function JoinUrl({ url }: { url: string }) {
   return (
@@ -24,57 +23,28 @@ function JoinUrl({ url }: { url: string }) {
   );
 }
 
-function Title( ) {
-  return (
-    <p class="my-4">
-      <label class="input w-full">
-        <span class="label">Title</span>
-        <input
-          type="text"
-          class="w-full"
-          value={titleSignal}
-          placeholder="Enter title"
-          onInput={(e) => {
-            titleSignal.value = (e.target as HTMLInputElement).value;
-            publishTitle();
-          }}
-        />
-      </label>
-    </p>
-  );
-}
-
 export default function paramsLoader() {
   const url = new URL(location.href);
   const topicId = url.pathname.split("/").slice(-1)[0];
   const secret = url.searchParams.get("secret") || "";
-  url.searchParams.delete("secret");
-  const joinUrl = url.href;
   const endpoint = `${location.origin}/api/topics/${topicId}?secret=${secret}`;
-  return <Presen joinUrl={joinUrl} endpoint={endpoint} />;
+  setEndpoint(endpoint);
+
+  url.searchParams.delete("secret");
+  return <Presen joinUrl={url.href} publisher={!!secret} />;
 }
 
-function Presen({ joinUrl, endpoint }: { joinUrl: string; endpoint: string }) {
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  const { pages, bind } = usePresentation({
-    markdown: markdownSignal.value,
-    contentRef,
-  });
-
-  const [isLeftPanelVisible, setIsLeftPanelVisible] = useState(true);
-
-  useEffect(() => {
-    setEndpoint(endpoint);
-  }, [endpoint]);
+function Presen(
+  { joinUrl, publisher }: { joinUrl: string; publisher: boolean },
+) {
+  const [isLeftPanelVisible, setIsLeftPanelVisible] = useState(publisher);
 
   return (
     <div id="presen" class="flex w-screen h-screen">
       <div id="left" class={`${isLeftPanelVisible ? "" : "collapse"}`}>
         <div class="p-8 w-full h-full max-w-2xl flex flex-col">
           <JoinUrl url={joinUrl} />
-          <Title />
-          <div class="w-full flex-grow">
+          <div class="flex-grow">
             <MarkdownEditor />
           </div>
         </div>
@@ -87,18 +57,9 @@ function Presen({ joinUrl, endpoint }: { joinUrl: string; endpoint: string }) {
         >
           {isLeftPanelVisible ? "<" : ">"}
         </button>
-        <div {...bind()} ref={contentRef} class="p-12 prose">
-          <div
-            class="presentation"
-            // deno-lint-ignore react-no-danger
-            dangerouslySetInnerHTML={{ __html: pages[currentPageSignal.value] }}
-          />
-        </div>
-        <ReactionSender
-          onSubmit={(reaction) => {
-            publishReaction(reaction);
-          }}
-        />
+        <ReactionFrame>
+          <PresentationContent />
+        </ReactionFrame>
       </div>
     </div>
   );

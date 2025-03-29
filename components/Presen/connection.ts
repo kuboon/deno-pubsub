@@ -1,4 +1,9 @@
-import { currentPageSignal, markdownSignal, titleSignal } from "./signals.ts";
+import {
+  currentPageSignal,
+  markdownSignal,
+  Reaction,
+  reactionsSignal,
+} from "./signals.ts";
 
 let ws: WebSocket | undefined;
 let endpoint: string | undefined;
@@ -8,9 +13,11 @@ export function setEndpoint(newEndpoint: string) {
 }
 
 function initializeWebSocket() {
-  if(!endpoint) throw new Error("Endpoint is not set");
+  if (!endpoint) throw new Error("Endpoint is not set");
   if (ws) {
-    if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+    if (
+      ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING
+    ) {
       return;
     }
     ws.close();
@@ -38,6 +45,13 @@ function initializeWebSocket() {
       if (data.currentPage !== undefined) {
         currentPageSignal.value = data.currentPage;
       }
+      if (data.pub && data.pub.reaction) {
+        const reaction: Reaction = data.pub.reaction;
+        reactionsSignal.value = [
+          ...reactionsSignal.value,
+          reaction,
+        ];
+      }
     } catch (error) {
       console.error("Error parsing WebSocket message:", error);
     }
@@ -45,14 +59,16 @@ function initializeWebSocket() {
 }
 
 function isWebSocketOpen(ws: WebSocket | undefined): ws is WebSocket {
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    if (!ws || ws.readyState === WebSocket.CLOSED) {
-      console.log("Attempting to reconnect WebSocket...");
-      initializeWebSocket(ws?.url || "");
-    }
-    return false;
+  if (!ws) {
+    console.log("Attempting to reconnect WebSocket...");
+    initializeWebSocket();
+  } else if (ws.readyState === WebSocket.CLOSED) {
+    console.log("Attempting to reconnect WebSocket...");
+    initializeWebSocket();
   }
-  return true;
+  if (!ws) return false;
+
+  return ws.readyState === WebSocket.OPEN;
 }
 
 export function publishCurrentPage() {
@@ -63,26 +79,21 @@ export function publishCurrentPage() {
   }
 }
 
-export function publishMarkdown() {
-  if (isWebSocketOpen(ws)) {
-    ws.send(
-      JSON.stringify({ markdown: markdownSignal.peek() }),
-    );
-  }
+export async function publishMarkdown() {
+  if (!endpoint) throw new Error("Endpoint is not set");
+  await fetch(endpoint, {
+    method: "POST",
+    body: JSON.stringify({ markdown: markdownSignal.peek() }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 }
 
-export function publishTitle() {
+export function publishReaction(reaction: Reaction) {
   if (isWebSocketOpen(ws)) {
     ws.send(
-      JSON.stringify({ title: titleSignal.peek() }),
-    );
-  }
-}
-
-export function publishReaction(reaction: string) {
-  if (isWebSocketOpen(ws)) {
-    ws.send(
-      JSON.stringify({ reaction }),
+      JSON.stringify({ pub: { reaction } }),
     );
   }
 }

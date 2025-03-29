@@ -1,30 +1,18 @@
-import { type Ref, useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { marked } from "marked";
-import { currentPageSignal } from "./signals.ts";
+import { currentPageSignal, markdownSignal } from "./signals.ts";
 import { publishCurrentPage } from "./connection.ts";
 
-interface UsePresentationProps {
-  markdown: string;
-  contentRef: Ref<HTMLDivElement>;
-}
-
-interface UsePresentationReturn {
-  pages: string[];
-  bind: () => { onPointerDown: (e: PointerEvent) => void };
-}
-
-export function usePresentation(
-  { markdown, contentRef }: UsePresentationProps,
-): UsePresentationReturn {
+export function PresentationContent() {
   const [currentSection, setCurrentSection] = useState(0);
-  const [direction, setDirection] = useState(1);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const getPages = (content: string) => {
     const html = marked(content) as string;
     return html.split("<hr>").map((page) => page.trim());
   };
 
-  const pages = getPages(markdown);
+  const pages = getPages(markdownSignal.value);
 
   const scrollToSection = (index: number) => {
     if (!contentRef.current) return;
@@ -54,11 +42,9 @@ export function usePresentation(
 
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
           if (deltaX > 0 && currentPageSignal.value > 0) {
-            setDirection(-1);
             currentPageSignal.value -= 1;
           }
           if (deltaX < 0 && currentPageSignal.value < pages.length - 1) {
-            setDirection(1);
             currentPageSignal.value += 1;
           }
         }
@@ -117,8 +103,13 @@ export function usePresentation(
     }
   }, [currentSection]);
 
-  return {
-    pages,
-    bind,
-  };
+  return (
+    <div {...bind()} ref={contentRef} class="p-12 prose">
+      <div
+        class="presentation"
+        // deno-lint-ignore react-no-danger
+        dangerouslySetInnerHTML={{ __html: pages[currentPageSignal.value] }}
+      />
+    </div>
+  );
 }

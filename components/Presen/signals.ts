@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals";
+import { computed, signal } from "@preact/signals";
 
 export const markdownSignal = signal(`# Markdown Presentation Tool
 このツールを使って、簡単にプレゼンテーションを作成できます！
@@ -52,5 +52,12 @@ function hello() {
 
 export const currentPageSignal = signal(0);
 
-export const wiredSignal = signal(false);
-export const titleSignal = signal("Markdown Presentation Tool");
+export type Reaction = {
+  emoji: string;
+  timestamp: number;
+};
+export const reactionsSignal = signal<Reaction[]>([]);
+export const activeReactions = computed(() => {
+  const timeout = Date.now() - 1000 * 3; // 3 seconds
+  return reactionsSignal.value.filter(({ timestamp }) => timestamp > timeout);
+});
