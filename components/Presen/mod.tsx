@@ -106,7 +106,7 @@ function Presen(
       class={`w-screen h-screen ${showPanel ? "show-panel" : ""}`}
     >
       <div class="panel">
-        <div class="p-8 w-full h-full max-w-2xl flex flex-col gap-4">
+        <div class="p-8 w-full h-full flex flex-col gap-4">
           <JoinUrl url={joinUrl} />
           <MarkdownEditor publisher={publisher} />
         </div>

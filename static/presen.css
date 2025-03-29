@@ -78,11 +78,19 @@
     .reaction-item {
       font-size: 5rem;
       position: absolute;
-      animation: 1.5s forwards move-up-fade-out;
+      animation: 1.5s ease-out forwards reaction-item;
+    }
+    .reaction-sender {
+      touch-action: manipulation;
+      display: flex;
+      button {
+        flex: 1;
+        font-size: 150%;
+      }
     }
   }
 }
-@keyframes move-up-fade-out {
+@keyframes reaction-item {
   from {
     transform: translateY(0);
     opacity: 1;
