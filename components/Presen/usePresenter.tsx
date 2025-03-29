@@ -1,6 +1,7 @@
 import { type Ref, useEffect, useState } from "preact/hooks";
 import { marked } from "marked";
 import { currentPageSignal } from "./signals.ts";
+import { publishCurrentPage } from "./connection.ts";
 
 interface UsePresentationProps {
   markdown: string;
@@ -8,13 +9,8 @@ interface UsePresentationProps {
 }
 
 interface UsePresentationReturn {
-  currentPage: number;
-  currentSection: number;
-  direction: number;
   pages: string[];
   bind: () => { onPointerDown: (e: PointerEvent) => void };
-  setCurrentPage: (page: number | ((prev: number) => number)) => void;
-  setCurrentSection: (section: number | ((prev: number) => number)) => void;
 }
 
 export function usePresentation(
@@ -88,14 +84,14 @@ export function usePresentation(
       switch (e.key) {
         case "ArrowLeft":
           if (currentPageSignal.value > 0) {
-            setDirection(-1);
             currentPageSignal.value -= 1;
+            publishCurrentPage();
           }
           break;
         case "ArrowRight":
           if (currentPageSignal.value < pages.length - 1) {
-            setDirection(1);
             currentPageSignal.value += 1;
+            publishCurrentPage();
           }
           break;
         case "ArrowUp":
@@ -122,18 +118,7 @@ export function usePresentation(
   }, [currentSection]);
 
   return {
-    currentPage: currentPageSignal.value,
-    currentSection,
-    direction,
     pages,
     bind,
-    setCurrentPage: (page) => {
-      if (typeof page === "function") {
-        currentPageSignal.value = page(currentPageSignal.value);
-      } else {
-        currentPageSignal.value = page;
-      }
-    },
-    setCurrentSection,
   };
 }

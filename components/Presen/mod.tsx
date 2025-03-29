@@ -1,7 +1,8 @@
 import { MarkdownEditor } from "./MarkdownEditor.tsx";
 import { ReactionSender } from "./ReactionForm.tsx";
 import { usePresentation } from "./usePresenter.tsx";
-import { markdownSignal, currentPageSignal } from "./signals.ts";
+import { markdownSignal, currentPageSignal, titleSignal } from "./signals.ts";
+import { setEndpoint, publishTitle, publishReaction } from "./connection.ts";
 
 import { useEffect, useRef, useState } from "preact/hooks";
 
@@ -23,9 +24,7 @@ function JoinUrl({ url }: { url: string }) {
   );
 }
 
-function Title(
-  { value, onChange }: { value: string; onChange: (value: string) => void },
-) {
+function Title( ) {
   return (
     <p class="my-4">
       <label class="input w-full">
@@ -33,9 +32,12 @@ function Title(
         <input
           type="text"
           class="w-full"
-          value={value}
+          value={titleSignal}
           placeholder="Enter title"
-          onInput={(e) => onChange((e.target as HTMLInputElement).value)}
+          onInput={(e) => {
+            titleSignal.value = (e.target as HTMLInputElement).value;
+            publishTitle();
+          }}
         />
       </label>
     </p>
@@ -55,55 +57,23 @@ export default function paramsLoader() {
 function Presen({ joinUrl, endpoint }: { joinUrl: string; endpoint: string }) {
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const { pages, currentSection, bind } = usePresentation({
+  const { pages, bind } = usePresentation({
     markdown: markdownSignal.value,
     contentRef,
   });
 
-  const [ws, setWs] = useState<WebSocket | undefined>(undefined);
-  const [reactions, setReactions] = useState<
-    { reaction: string; timestamp: number }[]
-  >([]);
-  const [title, setTitle] = useState("");
   const [isLeftPanelVisible, setIsLeftPanelVisible] = useState(true);
 
   useEffect(() => {
-    if (ws && ws.readyState === WebSocket.OPEN) return;
-
-    const ws_ = new WebSocket(endpoint);
-    setWs(ws_);
-
-    ws_.addEventListener("message", (event) => {
-      const data = JSON.parse(event.data);
-      if (data.reaction) {
-        setReactions((prev) => [
-          ...prev,
-          { reaction: data.reaction, timestamp: Date.now() },
-        ]);
-      }
-    });
-
-    ws_.onerror = (event) => {
-      console.error("WebSocket error observed:", event);
-    };
-
-    return () => {
-      ws_.close();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (ws) {
-      ws.send(JSON.stringify({ currentPage: currentPageSignal.value, currentSection }));
-    }
-  }, [currentPageSignal.value, currentSection]);
+    setEndpoint(endpoint);
+  }, [endpoint]);
 
   return (
     <div id="presen" class="flex w-screen h-screen">
       <div id="left" class={`${isLeftPanelVisible ? "" : "collapse"}`}>
         <div class="p-8 w-full h-full max-w-2xl flex flex-col">
           <JoinUrl url={joinUrl} />
-          <Title value={title} onChange={setTitle} />
+          <Title />
           <div class="w-full flex-grow">
             <MarkdownEditor />
           </div>
@@ -123,19 +93,10 @@ function Presen({ joinUrl, endpoint }: { joinUrl: string; endpoint: string }) {
             // deno-lint-ignore react-no-danger
             dangerouslySetInnerHTML={{ __html: pages[currentPageSignal.value] }}
           />
-          <div class="reactions">
-            {reactions.map((reaction, index) => (
-              <div key={index} class="badge badge-accent m-1">
-                {reaction.reaction}
-              </div>
-            ))}
-          </div>
         </div>
         <ReactionSender
           onSubmit={(reaction) => {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ reaction }));
-            }
+            publishReaction(reaction);
           }}
         />
       </div>
