@@ -3,6 +3,20 @@ import { marked } from "marked";
 import { currentPageSignal, markdownSignal } from "./signals.ts";
 import { publishCurrentPage } from "./connection.ts";
 
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.6.0/+esm";
+mermaid.initialize({ startOnLoad: false });
+
+marked.use({
+  renderer: {
+    code: function (code) {
+      if (code.lang == "mermaid") {
+        return `<pre class="mermaid">${code.text}</pre>`;
+      }
+      return `<pre>${code.text}</pre>`;
+    },
+  },
+});
+
 export function PresentationContent() {
   const [currentSection, setCurrentSection] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -103,13 +117,20 @@ export function PresentationContent() {
     }
   }, [currentSection]);
 
+  const __html = pages[currentPageSignal.value];
+  useEffect(() => {
+    if (contentRef.current) {
+      mermaid.run();
+    }
+  }, [__html]);
+
   return (
-    <div {...bind()} ref={contentRef} class="p-12 prose">
-      <div
-        class="presentation"
-        // deno-lint-ignore react-no-danger
-        dangerouslySetInnerHTML={{ __html: pages[currentPageSignal.value] }}
-      />
-    </div>
+    <div
+      {...bind()}
+      ref={contentRef}
+      class="presentation p-12 prose"
+      // deno-lint-ignore react-no-danger
+      dangerouslySetInnerHTML={{ __html }}
+    />
   );
 }
