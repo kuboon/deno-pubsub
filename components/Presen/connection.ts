@@ -78,7 +78,7 @@ function isWebSocketOpen(ws: WebSocket | undefined): ws is WebSocket {
 
 export async function publishMarkdown() {
   if (!endpoint) throw new Error("Endpoint is not set");
-  if(!publisher) return;
+  if (!publisher) return;
   await fetch(endpoint, {
     method: "POST",
     body: JSON.stringify({ markdown: markdownSignal.peek() }),

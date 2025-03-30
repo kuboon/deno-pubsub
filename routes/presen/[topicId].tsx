@@ -15,7 +15,15 @@ export const handler: Handlers = {
     if (verified === "invalid") {
       return new Response("Not Found", { status: 404 });
     }
-    const title = searchParams.get("title") || new Date().toLocaleDateString();
+    using kv = await Deno.openKv();
+    const entry = await kv.get<{ markdown: string }>([topicId]);
+    if (verified === "readable" && entry.versionstamp === null) {
+      return new Response("Not found", { status: 404 });
+    }
+    const data = entry.value;
+    const markdown = data?.markdown || "";
+    const title = markdown.match(/#\s*(.+)/)?.[1] ||
+      new Date().toISOString().slice(0, 10);
     return ctx.render({ topicId, secret, title });
   },
 };

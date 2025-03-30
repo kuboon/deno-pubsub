@@ -2,6 +2,7 @@
 import { Handlers } from "$fresh/server.ts";
 import { verify } from "../../../lib/crypto.ts";
 
+const expireIn = 7 * 24 * 60 * 60 * 1000; // 7 days
 export const handler: Handlers = {
   async POST(req, ctx) {
     const topicId = ctx.params["topicId"];
@@ -12,8 +13,8 @@ export const handler: Handlers = {
     }
 
     const body = await req.json();
-    const kv = await Deno.openKv();
-    await kv.set([topicId], body, { expireIn: 7 * 24 * 60 * 60 * 1000 });
+    using kv = await Deno.openKv();
+    await kv.set([topicId], body, { expireIn });
     return new Response(null, { status: 201 });
   },
   async GET(req, ctx) {
@@ -24,7 +25,7 @@ export const handler: Handlers = {
       return new Response("Not Found", { status: 404 });
     }
     if (req.headers.get("upgrade") !== "websocket") {
-      const kv = await Deno.openKv();
+      using kv = await Deno.openKv();
       const entry = await kv.get([topicId]);
       if (entry.versionstamp === null) {
         return new Response("Not found", { status: 404 });
