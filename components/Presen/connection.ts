@@ -1,5 +1,6 @@
 import {
   currentPageSignal,
+  currentSectionSignal,
   markdownSignal,
   Reaction,
   reactionsSignal,
@@ -46,6 +47,9 @@ function initializeWebSocket() {
       const data = JSON.parse(event.data);
       if (data.currentPage !== undefined) {
         currentPageSignal.value = data.currentPage;
+      }
+      if (data.currentSection !== undefined) {
+        currentSectionSignal.value = data.currentSection;
       }
       if (data.markdown !== undefined) {
         markdownSignal.value = data.markdown;
@@ -104,6 +108,14 @@ export function publishCurrentPage() {
   if (publisher && isWebSocketOpen(ws)) {
     ws.send(
       JSON.stringify({ currentPage: currentPageSignal.peek() }),
+    );
+  }
+}
+
+export function publishCurrentSection() {
+  if (publisher && isWebSocketOpen(ws)) {
+    ws.send(
+      JSON.stringify({ currentSection: currentSectionSignal.peek() }),
     );
   }
 }

@@ -5,6 +5,7 @@ export { effect };
 export const markdownSignal = signal("");
 
 export const currentPageSignal = signal(0);
+export const currentSectionSignal = signal(0);
 
 export type Reaction = {
   emoji: string;

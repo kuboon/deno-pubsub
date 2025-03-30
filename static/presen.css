@@ -72,6 +72,22 @@
   }
   .content {
     flex-grow: 1;
+    .current-section {
+      position: relative;
+      z-index: 1;
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: -2rem;
+        left: 0;
+        right: 0;
+        z-index: -1;
+        background: linear-gradient(to bottom, var(--color-primary), transparent);
+        filter: blur(5px);
+        animation: 2s ease-in-out forwards fadeout;
+      }
+    }
     > button {
       position: absolute;
       left: 10px;
@@ -104,4 +120,8 @@
     transform: translateY(-20px);
     opacity: 0;
   }
+}
+@keyframes fadeout {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
 }

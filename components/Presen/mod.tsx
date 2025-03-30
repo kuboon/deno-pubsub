@@ -6,15 +6,22 @@ import { useState } from "preact/hooks";
 import ReactionFrame from "./ReactionFrame.tsx";
 import { markdownSignal } from "./signals.ts";
 
-const defaultMarkdown = `# Markdown Presentation Tool
-このツールを使って、簡単にプレゼンテーションを作成できます！
-## キーボード操作
+const defaultMarkdown = `# ゼンプレ
+## ページ操作
 - → キー: 次のページ
 - ← キー: 前のページ
+
+左右スワイプでも操作可能です。
+
+# セクション移動
+１ページ内に複数の h1 要素 (#) がある場合、
 - ↑ キー: 前のセクション
 - ↓ キー: 次のセクション
-## マウス操作
-画面右下のボタンでページ移動ができます
+で移動します。
+上下のスワイプでも操作可能です。
+
+# 発表者と参加者
+発表者のページ／セクション操作は JoinUrl から参加した画面全てにリアルタイムに同期します。
 
 ---
 # Markdown を編集
