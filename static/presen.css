@@ -71,6 +71,7 @@
     }
   }
   .content {
+    flex-grow: 1;
     > button {
       position: absolute;
       left: 10px;
@@ -83,6 +84,10 @@
     .reaction-sender {
       touch-action: manipulation;
       display: flex;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      z-index: 10;
       button {
         flex: 1;
         font-size: 150%;
