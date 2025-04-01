@@ -1,12 +1,12 @@
-import { useEffect, useRef } from "preact/hooks";
+import { publishCurrentPage, publishCurrentSection } from "./connection.ts";
 import { marked } from "marked";
 import {
-  currentPageSignal,
-  currentSectionSignal,
-  effect,
+  currentPageRanged,
+  currentSectionRanged,
   markdownSignal,
 } from "./signals.ts";
-import { publishCurrentPage, publishCurrentSection } from "./connection.ts";
+import { useEffect, useRef } from "preact/hooks";
+import { useSignalEffect } from "@preact/signals";
 
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.6.0/+esm";
 mermaid.initialize({ startOnLoad: false });
@@ -29,59 +29,83 @@ const getPages = (content: string) => {
 
 const control = {
   right() {
-    currentPageSignal.value += 1;
+    currentPageRanged.update((val) => val + 1);
     publishCurrentPage();
   },
   left() {
-    if (currentPageSignal.value > 0) {
-      currentPageSignal.value -= 1;
-      publishCurrentPage();
-    }
+    currentPageRanged.update((val) => val - 1);
+    publishCurrentPage();
   },
   down() {
-    currentSectionSignal.value += 1;
+    currentSectionRanged.update((val) => val + 1);
     publishCurrentSection();
   },
   up() {
-    if (currentSectionSignal.value > 0) {
-      currentSectionSignal.value -= 1;
-      publishCurrentSection();
-    }
+    currentSectionRanged.update((val) => val - 1);
+    publishCurrentSection();
+  },
+  scrollTo(val: number) {
+    currentSectionRanged.value = val;
+    publishCurrentSection();
   },
 };
+
+function delay(fn: (...args: unknown[]) => void, ms: number) {
+  let timeoutId: number;
+  return (...args: unknown[]) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(fn, ms, ...args);
+  };
+}
 
 export function PresentationContent() {
   const contentRef = useRef<HTMLDivElement>(null);
 
   const pages = getPages(markdownSignal.value);
-  const __html = pages[currentPageSignal.value];
+  const __html = pages[currentPageRanged.value];
   useEffect(() => {
-    if (contentRef.current) {
-      mermaid.run();
-    }
-  }, [__html]);
-  useEffect(() => {
-    if (currentPageSignal.value >= pages.length) {
-      currentPageSignal.value = pages.length - 1;
-    }
-  }, [currentPageSignal.value, pages.length]);
+    if (!contentRef.current) return;
+    const h1Elements = contentRef.current.getElementsByTagName("h1");
+    currentSectionRanged.max.value = h1Elements.length - 1;
+    mermaid.run();
+  }, [contentRef, __html]);
+
+  useSignalEffect(() => {
+    const currentSection = currentSectionRanged.value;
+    if (!contentRef.current) return;
+    const h1Elements = contentRef.current.getElementsByTagName("h1");
+    const target = h1Elements[currentSection];
+    if (!target) return;
+
+    [...h1Elements].forEach((h1) => {
+      h1.classList.remove("current-section");
+    });
+    target.classList.add("current-section");
+
+    delay(
+      () => target.scrollIntoView({ behavior: "smooth", block: "start" }),
+      1,
+    )();
+  });
+
+  currentPageRanged.max.value = pages.length - 1;
 
   const bind = () => {
     let swiping = false;
 
     const onKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
-        case "ArrowLeft":
-          control.left();
-          break;
         case "ArrowRight":
           control.right();
           break;
-        case "ArrowUp":
-          control.up();
+        case "ArrowLeft":
+          control.left();
           break;
         case "ArrowDown":
           control.down();
+          break;
+        case "ArrowUp":
+          control.up();
           break;
       }
     };
@@ -102,14 +126,7 @@ export function PresentationContent() {
 
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
           if (deltaX > 0) control.left();
-          if (deltaX < 0 && currentPageSignal.value < pages.length - 1) {
-            control.right();
-          }
-        } else {
-          if (deltaY > 0) {
-            control.down();
-          }
-          if (deltaY < 0) control.up();
+          if (deltaX < 0) control.right();
         }
 
         removeListeners();
@@ -125,31 +142,35 @@ export function PresentationContent() {
       document.addEventListener("pointerup", removeListeners);
     };
 
-    return { onKeyDown, tabIndex: -1, onPointerDown };
+    const onScroll = () => {
+      if (!contentRef.current) return;
+      const h1Elements = contentRef.current.getElementsByTagName("h1");
+      if (h1Elements.length === 0) return;
+      for (let i = 0; i < h1Elements.length; i++) {
+        const rect = h1Elements[i].getBoundingClientRect();
+        if (0 <= rect.top) {
+          control.scrollTo(i);
+          return;
+        }
+      }
+    };
+
+    return {
+      onKeyDown,
+      tabIndex: -1,
+      onPointerDown,
+      onScroll: delay(onScroll, 100),
+    };
   };
 
-  effect(() => {
-    if (!contentRef.current) return;
-    const h1Elements = contentRef.current.getElementsByTagName("h1");
-    const target = h1Elements[currentSectionSignal.value];
-    if (!target) {
-      currentSectionSignal.value = h1Elements.length - 1;
-      return;
-    }
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
-    [...h1Elements].forEach((h1) => {
-      h1.classList.remove("current-section");
-    });
-    target.classList.add("current-section");
-  });
-
   return (
-    <div
-      {...bind()}
-      ref={contentRef}
-      class="presentation p-8 prose"
-      // deno-lint-ignore react-no-danger
-      dangerouslySetInnerHTML={{ __html }}
-    />
+    <div {...bind()} class="overflow-y-auto h-full w-full">
+      <div
+        ref={contentRef}
+        class="presentation p-8 prose"
+        // deno-lint-ignore react-no-danger
+        dangerouslySetInnerHTML={{ __html }}
+      />
+    </div>
   );
 }

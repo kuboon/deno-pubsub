@@ -83,14 +83,19 @@
         left: 0;
         right: 0;
         z-index: -1;
-        background: linear-gradient(to bottom, var(--color-primary), transparent);
+        background: linear-gradient(
+          to bottom,
+          var(--color-primary),
+          transparent
+        );
         filter: blur(5px);
         animation: 2s ease-in-out forwards fadeout;
       }
     }
-    > button {
-      position: absolute;
-      left: 10px;
+    .presentation {
+      padding-bottom: 50%;
+      scroll-padding-top: 2rem;
+      scroll-snap-type: y mandatory;
     }
     .reaction-item {
       font-size: 5rem;
@@ -122,6 +127,10 @@
   }
 }
 @keyframes fadeout {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }

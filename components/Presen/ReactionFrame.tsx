@@ -11,7 +11,7 @@ const postionFromTimestamp = (timestamp: number) => {
 export default function ReactionFrame({ children }: { children: JSX.Element }) {
   return (
     <>
-      <div class="reaction-frame relative">
+      <div class="reaction-frame h-full">
         {children}
         {activeReactions.value.map(({ emoji, timestamp }) => (
           <div
