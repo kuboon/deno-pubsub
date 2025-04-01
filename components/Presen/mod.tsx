@@ -126,7 +126,7 @@ function Presen(
       </div>
       <div class="content bg-base-100 relative">
         <ReactionFrame>
-          <PresentationContent />
+          <PresentationContent publisher={publisher} />
         </ReactionFrame>
       </div>
     </div>

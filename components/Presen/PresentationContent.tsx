@@ -58,7 +58,7 @@ function delay(fn: (...args: unknown[]) => void, ms: number) {
   };
 }
 
-export function PresentationContent() {
+export function PresentationContent({ publisher }: { publisher: boolean }) {
   const contentRef = useRef<HTMLDivElement>(null);
 
   const pages = getPages(markdownSignal.value);
@@ -102,10 +102,10 @@ export function PresentationContent() {
           control.left();
           break;
         case "ArrowDown":
-          control.down();
+          if (publisher) control.down();
           break;
         case "ArrowUp":
-          control.up();
+          if (publisher) control.up();
           break;
       }
     };
@@ -143,6 +143,7 @@ export function PresentationContent() {
     };
 
     const onScroll = () => {
+      if (!publisher) return;
       if (!contentRef.current) return;
       const h1Elements = contentRef.current.getElementsByTagName("h1");
       if (h1Elements.length === 0) return;
