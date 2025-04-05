@@ -111,10 +111,7 @@ function Presen(
   const [showPanel, setShowPanel] = useState(publisher);
 
   return (
-    <div
-      id="presen"
-      class={`w-screen h-screen ${showPanel ? "show-panel" : ""}`}
-    >
+    <div id="presen" class={showPanel ? "show-panel" : ""}>
       <div class="panel">
         <div class="p-8 size-full flex flex-col gap-4">
           <JoinUrl url={joinUrl} />
