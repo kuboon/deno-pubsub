@@ -1,26 +1,10 @@
 import { publishCurrentPage, publishCurrentSection } from "./connection.ts";
-import { marked } from "marked";
 import {
   currentPageRanged,
   currentSectionRanged,
   markdownSignal,
 } from "./signals.ts";
-import { useEffect, useRef } from "preact/hooks";
-import { useSignalEffect } from "@preact/signals";
-
-import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.6.0/+esm";
-mermaid.initialize({ startOnLoad: false });
-
-marked.use({
-  renderer: {
-    code: function (code) {
-      if (code.lang == "mermaid") {
-        return `<pre class="mermaid">${code.text}</pre>`;
-      }
-      return `<pre>${code.text}</pre>`;
-    },
-  },
-});
+import { useEffect, useRef, useSignalEffect, marked } from "./deps.ts";
 
 const getPages = (content: string) => {
   const html = marked(content) as string;
@@ -67,7 +51,6 @@ export function PresentationContent({ publisher }: { publisher: boolean }) {
     if (!contentRef.current) return;
     const h1Elements = contentRef.current.getElementsByTagName("h1");
     currentSectionRanged.max.value = h1Elements.length - 1;
-    mermaid.run();
   }, [contentRef, __html]);
 
   useSignalEffect(() => {

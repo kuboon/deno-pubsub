@@ -1,6 +1,6 @@
-import { useRef, useState } from "preact/hooks";
 import { markdownSignal } from "./signals.ts";
 import { publishMarkdown } from "./connection.ts";
+import { useRef, useState } from "./deps.ts";
 
 export function MarkdownEditor({ publisher }: { publisher: boolean }) {
   const textRef = useRef<HTMLTextAreaElement>(null);

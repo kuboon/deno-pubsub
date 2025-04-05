@@ -1,6 +1,6 @@
-import { JSX } from "preact/jsx-runtime";
 import { activeReactions, reactionsSignal } from "./signals.ts";
 import { publishReaction } from "./connection.ts";
+import type { JSX } from "./deps.ts";
 
 const postionFromTimestamp = (timestamp: number) => {
   const top = timestamp % 97;

@@ -2,7 +2,7 @@ import {
   currentPageRanged,
   currentSectionRanged,
   markdownSignal,
-  Reaction,
+  type Reaction,
   reactionsSignal,
 } from "./signals.ts";
 

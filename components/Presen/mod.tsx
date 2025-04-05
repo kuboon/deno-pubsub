@@ -1,10 +1,9 @@
 import { MarkdownEditor } from "./MarkdownEditor.tsx";
 import { PresentationContent } from "./PresentationContent.tsx";
 import { getMarkdown, setEndpoint } from "./connection.ts";
-
-import { useState } from "preact/hooks";
 import ReactionFrame from "./ReactionFrame.tsx";
 import { markdownSignal } from "./signals.ts";
+import { useState } from "./deps.ts";
 
 const defaultMarkdown = `# ゼンプレ
 ## ページ操作
