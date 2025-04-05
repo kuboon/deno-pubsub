@@ -91,10 +91,12 @@ function JoinUrl({ url }: { url: string }) {
 }
 
 export default function paramsLoader() {
+  // const endpointOrigin = "http://127.0.0.1:8001";
+  const endpointOrigin = location.origin;
   const url = new URL(location.href);
   const topicId = url.pathname.split("/").slice(-1)[0];
   const secret = url.searchParams.get("secret") || "";
-  const endpoint = `${location.origin}/api/topics/${topicId}?secret=${secret}`;
+  const endpoint = `${endpointOrigin}/api/topics/${topicId}?secret=${secret}`;
   setEndpoint(endpoint);
   getMarkdown().then((markdown) => {
     markdownSignal.value = markdown || defaultMarkdown;
