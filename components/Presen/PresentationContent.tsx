@@ -3,13 +3,9 @@ import {
   currentPageRanged,
   currentSectionRanged,
   markdownSignal,
+  pagesSignal
 } from "./signals.ts";
-import { useEffect, useRef, useSignalEffect, marked } from "./deps.ts";
-
-const getPages = (content: string) => {
-  const html = marked(content) as string;
-  return html.split("<hr>").map((page) => page.trim());
-};
+import { getPages, useRef, useSignalEffect } from "./deps.ts";
 
 const control = {
   right() {
@@ -45,13 +41,18 @@ function delay(fn: (...args: unknown[]) => void, ms: number) {
 export function PresentationContent({ publisher }: { publisher: boolean }) {
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const pages = getPages(markdownSignal.value);
-  const __html = pages[currentPageRanged.value];
-  useEffect(() => {
+  useSignalEffect(() => {
+    getPages(markdownSignal.value).then((pages_) => {
+      pagesSignal.value = pages_;
+      currentPageRanged.max.value = pages_.length - 1;
+    });
+  });
+  useSignalEffect(() => {
     if (!contentRef.current) return;
+    contentRef.current.innerHTML = pagesSignal.value[currentPageRanged.value];
     const h1Elements = contentRef.current.getElementsByTagName("h1");
     currentSectionRanged.max.value = h1Elements.length - 1;
-  }, [contentRef, __html]);
+  });
 
   useSignalEffect(() => {
     const currentSection = currentSectionRanged.value;
@@ -70,8 +71,6 @@ export function PresentationContent({ publisher }: { publisher: boolean }) {
       1,
     )();
   });
-
-  currentPageRanged.max.value = pages.length - 1;
 
   const bind = () => {
     let swiping = false;
@@ -149,12 +148,7 @@ export function PresentationContent({ publisher }: { publisher: boolean }) {
 
   return (
     <div {...bind()} class="overflow-y-auto h-full w-full">
-      <div
-        ref={contentRef}
-        class="presentation p-8 prose"
-        // deno-lint-ignore react-no-danger
-        dangerouslySetInnerHTML={{ __html }}
-      />
+      <div ref={contentRef} class="presentation p-8 prose" />
     </div>
   );
 }

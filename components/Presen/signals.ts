@@ -17,7 +17,7 @@ const conditionalSignal = <T, T2 = Record<string, unknown>>(
       val.value = newVal;
     },
     update: (fn: (value: T) => T) => {
-      val.value = fn(computedVal.value);
+      val.value = fn(computedVal.peek());
     },
     peek: () => computedVal.peek(),
     ...ext,
@@ -39,6 +39,7 @@ const rangedNumSignal = () => {
 };
 export const currentPageRanged = rangedNumSignal();
 export const currentSectionRanged = rangedNumSignal();
+export const pagesSignal = signal<string[]>([]);
 
 export type Reaction = {
   emoji: string;
