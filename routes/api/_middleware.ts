@@ -4,7 +4,7 @@ export async function handler(
   req: Request,
   ctx: FreshContext,
 ) {
-  if(req.headers.get("Upgrade") === "websocket") {
+  if (req.headers.get("Upgrade") === "websocket") {
     return ctx.next();
   }
   const isPreflight = req.method == "OPTIONS";
@@ -20,5 +20,5 @@ export async function handler(
   for (const [key, value] of Object.entries(cors)) {
     resp.headers.set(`Access-Control-Allow-${key}`, value);
   }
-  return resp;//new Response(resp.body, { ...resp, headers });
+  return resp; //new Response(resp.body, { ...resp, headers });
 }

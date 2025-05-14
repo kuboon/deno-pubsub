@@ -3,7 +3,7 @@ import {
   currentPageRanged,
   currentSectionRanged,
   markdownSignal,
-  pagesSignal
+  pagesSignal,
 } from "./signals.ts";
 import { getPages, useRef, useSignalEffect } from "./deps.ts";
 
