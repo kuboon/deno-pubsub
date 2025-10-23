@@ -16,6 +16,11 @@ export default async function Home() {
           Simple Chat
         </a>
       </p>
+      <p>
+        <a href={`terminal/${pair.topicId}?secret=${pair.secret}`}>
+          Terminal
+        </a>
+      </p>
 
       <h1>API</h1>
       <h2>POST /api/topics</h2>

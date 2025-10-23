@@ -7,11 +7,14 @@ import * as $_app from "./routes/_app.tsx";
 import * as $api_middleware from "./routes/api/_middleware.ts";
 import * as $api_topics from "./routes/api/topics.ts";
 import * as $api_topics_topicId_ from "./routes/api/topics/[topicId].ts";
+import * as $cli from "./routes/cli/index.ts";
 import * as $index from "./routes/index.tsx";
 import * as $presen_topicId_ from "./routes/presen/[topicId].tsx";
 import * as $simplechat_topicId_ from "./routes/simplechat/[topicId].tsx";
+import * as $terminal_topicId_ from "./routes/terminal/[topicId].tsx";
 import * as $Presen from "./islands/Presen.tsx";
 import * as $SimpleChat from "./islands/SimpleChat.tsx";
+import * as $Terminal from "./islands/Terminal.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -21,13 +24,16 @@ const manifest = {
     "./routes/api/_middleware.ts": $api_middleware,
     "./routes/api/topics.ts": $api_topics,
     "./routes/api/topics/[topicId].ts": $api_topics_topicId_,
+    "./routes/cli/index.ts": $cli,
     "./routes/index.tsx": $index,
     "./routes/presen/[topicId].tsx": $presen_topicId_,
     "./routes/simplechat/[topicId].tsx": $simplechat_topicId_,
+    "./routes/terminal/[topicId].tsx": $terminal_topicId_,
   },
   islands: {
     "./islands/Presen.tsx": $Presen,
     "./islands/SimpleChat.tsx": $SimpleChat,
+    "./islands/Terminal.tsx": $Terminal,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

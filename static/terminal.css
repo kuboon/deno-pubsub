@@ -1,0 +1,49 @@
+#terminal {
+  min-height: 100vh;
+  background-color: #0f172a;
+  color: white;
+  padding-bottom: 3rem;
+}
+
+#terminal h1 {
+  color: inherit;
+}
+
+#terminal :where(p, a, label, span, input) {
+  color: inherit;
+}
+
+#terminal a {
+  text-decoration: underline;
+}
+
+#terminal .terminal-shell {
+  background-color: #111827;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.45);
+  max-width: 960px;
+}
+
+#terminal .terminal-container {
+  height: 480px;
+}
+
+#terminal .join-info .label {
+  color: #e2e8f0;
+}
+
+#terminal .join-info input {
+  background-color: rgba(15, 23, 42, 0.9);
+  color: inherit;
+}
+
+@media (max-width: 768px) {
+  #terminal {
+    padding: 1rem;
+  }
+
+  #terminal .terminal-container {
+    height: 360px;
+  }
+}
