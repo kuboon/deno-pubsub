@@ -27,6 +27,52 @@ type OutgoingMessage = ReadyMessage | StreamMessage | ExitMessage;
 const DEFAULT_BASE = "https://pubsub.kbn.one";
 const textEncoder = new TextEncoder();
 
+type BrowserCommand = {
+  cmd: string;
+  args: string[];
+};
+
+function resolveBrowserCommand(url: string): BrowserCommand | null {
+  switch (Deno.build.os) {
+    case "darwin":
+      return { cmd: "open", args: [url] };
+    case "linux":
+      return { cmd: "xdg-open", args: [url] };
+    case "windows":
+      return { cmd: "cmd", args: ["/c", "start", "", url] };
+    default:
+      return null;
+  }
+}
+
+async function openBrowser(url: string): Promise<boolean> {
+  const command = resolveBrowserCommand(url);
+  if (!command) {
+    console.warn(
+      `[pubsub] unable to automatically open a browser on ${Deno.build.os}`,
+    );
+    return false;
+  }
+
+  console.log(`[pubsub] opening browser: ${url}`);
+  try {
+    const opener = new Deno.Command(command.cmd, {
+      args: command.args,
+      stdin: "null",
+      stdout: "null",
+      stderr: "inherit",
+    }).spawn();
+    const status = await opener.status;
+    if (!status.success) {
+      console.warn(`[pubsub] failed to open browser (exit ${status.code})`);
+    }
+    return status.success;
+  } catch (error) {
+    console.warn("[pubsub] failed to open browser", error);
+    return false;
+  }
+}
+
 async function createTopic(baseUrl: string): Promise<Pair> {
   const response = await fetch(new URL("/api/topics", baseUrl), {
     method: "POST",
@@ -141,6 +187,8 @@ async function main() {
   const wsUrl = toWebSocketUrl(baseUrl, pair);
   const ws = new WebSocket(wsUrl);
   await waitForOpen(ws);
+
+  await openBrowser(urls.owner);
 
   const command = new Deno.Command(Deno.args[0], {
     args: Deno.args.slice(1),
