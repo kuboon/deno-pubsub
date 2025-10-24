@@ -26,8 +26,22 @@ export default function Terminal({ topicId, secret }: Props) {
 
   useEffect(() => {
     let dispose = false;
-    let term: any;
-    let fitAddon: any;
+    let term: {
+      dispose: () => void;
+      loadAddon: (addon: unknown) => void;
+      open: (element: HTMLElement) => void;
+      focus: () => void;
+      writeln: (text: string) => void;
+      write: (text: string) => void;
+      onData: (callback: (data: string) => void) => void;
+      onResize: (
+        callback: (event: { cols: number; rows: number }) => void,
+      ) => void;
+    } | null = null;
+    let fitAddon: {
+      fit: () => void;
+      dispose?: () => void;
+    } | null = null;
     let ws: WebSocket | null = null;
 
     const handleResize = () => {
@@ -39,7 +53,7 @@ export default function Terminal({ topicId, secret }: Props) {
     };
 
     const cleanup = () => {
-      window.removeEventListener("resize", handleResize);
+      globalThis.removeEventListener("resize", handleResize);
       if (ws) {
         ws.close();
         ws = null;
@@ -68,13 +82,18 @@ export default function Terminal({ topicId, secret }: Props) {
         cursorBlink: true,
       });
       fitAddon = new FitAddon();
-      term.loadAddon(fitAddon);
-      term.open(containerRef.current!);
-      fitAddon.fit();
-      term.focus();
-      term.writeln("Connecting websocket...");
+      if (term && fitAddon) {
+        term.loadAddon(fitAddon);
+        term.open(containerRef.current!);
+        fitAddon.fit();
+        term.focus();
+        term.writeln("Connecting websocket...");
+      }
 
-      const wsUrl = new URL(`/api/topics/${topicId}`, window.location.origin);
+      const wsUrl = new URL(
+        `/api/topics/${topicId}`,
+        globalThis.location.origin,
+      );
       if (secret) {
         wsUrl.searchParams.set("secret", secret);
       }
@@ -83,17 +102,21 @@ export default function Terminal({ topicId, secret }: Props) {
 
       ws.addEventListener("open", () => {
         setStatus("接続しました");
-        term.writeln("Ready. Waiting for process...\r\n");
+        term?.writeln("Ready. Waiting for process...\r\n");
+        // secret付きURLが開かれたことをCLIに通知
+        if (secret && ws) {
+          ws.send(JSON.stringify({ pub: { type: "opened" } }));
+        }
       });
 
       ws.addEventListener("close", () => {
         setStatus("切断されました");
-        term.writeln("\r\n[connection closed]");
+        term?.writeln("\r\n[connection closed]");
       });
 
       ws.addEventListener("error", () => {
         setStatus("接続エラー");
-        term.writeln("\r\n[connection error]");
+        term?.writeln("\r\n[connection error]");
       });
 
       ws.addEventListener("message", (event) => {
@@ -108,18 +131,20 @@ export default function Terminal({ topicId, secret }: Props) {
           switch (message.type) {
             case "ready":
               setStatus("プロセスと接続しました");
-              term.writeln("Process connected.\r\n");
+              term?.writeln("Process connected.\r\n");
               break;
             case "stdout":
             case "stderr": {
-              const bytes = decodeBase64(message.data);
-              const text = decoder.decode(bytes);
-              term.write(text);
+              if (typeof message.data === "string") {
+                const bytes = decodeBase64(message.data);
+                const text = decoder.decode(bytes);
+                term?.write(text);
+              }
               break;
             }
             case "exit":
               setStatus("プロセスが終了しました");
-              term.writeln(`\r\nProcess exited (code: ${message.code}).`);
+              term?.writeln(`\r\nProcess exited (code: ${message.code}).`);
               break;
             default:
               break;
@@ -129,19 +154,27 @@ export default function Terminal({ topicId, secret }: Props) {
         }
       });
 
-      term.onData((data: string) => {
+      term?.onData((data: string) => {
         if (ws?.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ pub: { type: "stdin", data } }));
+          try {
+            ws.send(JSON.stringify({ pub: { type: "stdin", data } }));
+          } catch (error) {
+            console.error("Failed to send stdin data:", error);
+          }
         }
       });
 
-      term.onResize(({ cols, rows }: { cols: number; rows: number }) => {
+      term?.onResize(({ cols, rows }: { cols: number; rows: number }) => {
         if (ws?.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ pub: { type: "resize", cols, rows } }));
+          try {
+            ws.send(JSON.stringify({ pub: { type: "resize", cols, rows } }));
+          } catch (error) {
+            console.error("Failed to send resize data:", error);
+          }
         }
       });
 
-      window.addEventListener("resize", handleResize);
+      globalThis.addEventListener("resize", handleResize);
     })();
 
     return () => {

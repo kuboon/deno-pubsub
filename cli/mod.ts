@@ -1,7 +1,6 @@
 #!/usr/bin/env -S deno run -A
-import { encode as encodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts";
-
-type Pair = { topicId: string; secret: string };
+import { encodeBase64 } from "@std/encoding";
+import { Pair } from "../lib/crypto.ts";
 
 type PubMessage = {
   pub?: { type?: string; data?: string; cols?: number; rows?: number };
@@ -26,52 +25,6 @@ type OutgoingMessage = ReadyMessage | StreamMessage | ExitMessage;
 
 const DEFAULT_BASE = "https://pubsub.kbn.one";
 const textEncoder = new TextEncoder();
-
-type BrowserCommand = {
-  cmd: string;
-  args: string[];
-};
-
-function resolveBrowserCommand(url: string): BrowserCommand | null {
-  switch (Deno.build.os) {
-    case "darwin":
-      return { cmd: "open", args: [url] };
-    case "linux":
-      return { cmd: "xdg-open", args: [url] };
-    case "windows":
-      return { cmd: "cmd", args: ["/c", "start", "", url] };
-    default:
-      return null;
-  }
-}
-
-async function openBrowser(url: string): Promise<boolean> {
-  const command = resolveBrowserCommand(url);
-  if (!command) {
-    console.warn(
-      `[pubsub] unable to automatically open a browser on ${Deno.build.os}`,
-    );
-    return false;
-  }
-
-  console.log(`[pubsub] opening browser: ${url}`);
-  try {
-    const opener = new Deno.Command(command.cmd, {
-      args: command.args,
-      stdin: "null",
-      stdout: "null",
-      stderr: "inherit",
-    }).spawn();
-    const status = await opener.status;
-    if (!status.success) {
-      console.warn(`[pubsub] failed to open browser (exit ${status.code})`);
-    }
-    return status.success;
-  } catch (error) {
-    console.warn("[pubsub] failed to open browser", error);
-    return false;
-  }
-}
 
 async function createTopic(baseUrl: string): Promise<Pair> {
   const response = await fetch(new URL("/api/topics", baseUrl), {
@@ -141,6 +94,7 @@ async function forwardStream(
       if (ws.readyState !== WebSocket.OPEN) break;
       const message: StreamMessage = { type, data: encodeBase64(value) };
       sendMessage(ws, message);
+      Deno.stdout.write(value);
     }
   } finally {
     reader.releaseLock();
@@ -155,11 +109,21 @@ function sendMessage(ws: WebSocket, message: OutgoingMessage) {
 async function handlePubMessage(
   message: PubMessage,
   writer?: WritableStreamDefaultWriter<Uint8Array>,
+  onOpened?: () => void,
 ) {
   const payload = message.pub;
   if (!payload) return;
-  if (payload.type === "stdin" && payload.data) {
-    await writer?.write(textEncoder.encode(payload.data));
+  if (payload.type === "opened" && onOpened) {
+    onOpened();
+  } else if (payload.type === "stdin" && payload.data && writer) {
+    try {
+      await writer.write(textEncoder.encode(payload.data));
+    } catch (error) {
+      console.error("[pubsub] failed to write stdin", error);
+    }
+  } else if (payload.type === "resize" && payload.cols && payload.rows) {
+    // リサイズ処理（将来的な拡張用）
+    console.log(`[pubsub] terminal resize: ${payload.cols}x${payload.rows}`);
   }
 }
 
@@ -188,40 +152,90 @@ async function main() {
   const ws = new WebSocket(wsUrl);
   await waitForOpen(ws);
 
-  await openBrowser(urls.owner);
+  console.log("[pubsub] waiting for browser to open...");
 
-  const command = new Deno.Command(Deno.args[0], {
-    args: Deno.args.slice(1),
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "piped",
-  });
+  // 'opened'メッセージを待つPromise
+  const { promise: openedPromise, resolve: resolveOpened } = Promise
+    .withResolvers<void>();
 
-  const child = command.spawn();
-  const writer = child.stdin?.getWriter();
+  let child: Deno.ChildProcess | null = null;
+  let writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
 
-  const signalHandler = (signal: Deno.Signal) => {
-    console.error(
-      `[pubsub] received ${signal}, forwarding to child process...`,
-    );
-    try {
-      child.kill(signal);
-    } catch (error) {
-      console.error("[pubsub] failed to send signal", error);
+  const startProcess = () => {
+    console.log("[pubsub] browser opened, starting process...");
+
+    // Try to use script command to create a pseudo-terminal
+    // This is a workaround since Deno doesn't have native pty support
+    const isVimLike = Deno.args[0] &&
+      ["vim", "vi", "nano", "emacs"].includes(Deno.args[0]);
+
+    let command: Deno.Command;
+    const env = {
+      ...Deno.env.toObject(),
+      TERM: "xterm-256color",
+      COLORTERM: "truecolor",
+      FORCE_COLOR: "1",
+      LINES: "24",
+      COLUMNS: "80",
+      TERMINAL: "deno-pubsub",
+    };
+
+    if (isVimLike) {
+      // Use script command to create a pty for terminal applications
+      command = new Deno.Command("script", {
+        args: [
+          "-qec",
+          `${Deno.args[0]} ${Deno.args.slice(1).join(" ")}`,
+          "/dev/null",
+        ],
+        stdin: "piped",
+        stdout: "piped",
+        stderr: "piped",
+        env,
+      });
+    } else {
+      // Regular command for non-terminal applications
+      command = new Deno.Command(Deno.args[0], {
+        args: Deno.args.slice(1),
+        stdin: "piped",
+        stdout: "piped",
+        stderr: "piped",
+        env,
+      });
     }
-  };
-  for (const signal of ["SIGINT", "SIGTERM"] as const) {
-    Deno.addSignalListener(signal, signalHandler);
-  }
 
-  ws.addEventListener("message", (event) => {
+    child = command.spawn();
+    writer = child.stdin?.getWriter();
+
+    // Monitor process status
+    child.status.then((status) => {
+      console.log(`[pubsub] process exited with code ${status.code}`);
+      if (status.signal) {
+        console.log(`[pubsub] process killed by signal ${status.signal}`);
+      }
+      // Send exit message to browser
+      if (ws.readyState === WebSocket.OPEN) {
+        const exitMessage: ExitMessage = {
+          type: "exit",
+          code: status.code || 0,
+          success: status.success,
+          signal: status.signal,
+        };
+        sendMessage(ws, exitMessage);
+      }
+    }).catch((error) => {
+      console.error("[pubsub] failed to wait for process", error);
+    });
+
+    resolveOpened();
+  };
+
+  ws.addEventListener("message", async (event) => {
     try {
       const message = JSON.parse(event.data) as PubMessage;
-      handlePubMessage(message, writer).catch((error) => {
-        console.error("[pubsub] failed to write to child stdin", error);
-      });
+      await handlePubMessage(message, writer, startProcess);
     } catch (error) {
-      console.error("[pubsub] invalid message", error);
+      console.error("[pubsub] failed to handle message", error);
     }
   });
 
@@ -231,17 +245,47 @@ async function main() {
 
   sendMessage(ws, { type: "ready" });
 
+  // 'opened'メッセージを待ってから子プロセスの処理を開始
+  await openedPromise;
+
+  if (!child) {
+    console.error("[pubsub] child process not started");
+    Deno.exit(1);
+  }
+
+  const sigintHandler = () => {
+    console.error(
+      `[pubsub] received SIGINT, forwarding to child process...`,
+    );
+    try {
+      child?.kill("SIGINT");
+    } catch (error) {
+      console.error("[pubsub] failed to send signal", error);
+    }
+  };
+  const sigtermHandler = () => {
+    console.error(
+      `[pubsub] received SIGTERM, forwarding to child process...`,
+    );
+    try {
+      child?.kill("SIGTERM");
+    } catch (error) {
+      console.error("[pubsub] failed to send signal", error);
+    }
+  };
+  Deno.addSignalListener("SIGINT", sigintHandler);
+  Deno.addSignalListener("SIGTERM", sigtermHandler);
+
   const [stdoutResult, stderrResult, status] = await Promise.all([
-    forwardStream(ws, child.stdout, "stdout"),
-    forwardStream(ws, child.stderr, "stderr"),
-    child.status,
+    forwardStream(ws, (child as Deno.ChildProcess).stdout, "stdout"),
+    forwardStream(ws, (child as Deno.ChildProcess).stderr, "stderr"),
+    (child as Deno.ChildProcess).status,
   ]);
   void stdoutResult;
   void stderrResult;
 
-  for (const signal of ["SIGINT", "SIGTERM"] as const) {
-    Deno.removeSignalListener(signal, signalHandler);
-  }
+  Deno.removeSignalListener("SIGINT", sigintHandler);
+  Deno.removeSignalListener("SIGTERM", sigtermHandler);
 
   try {
     await writer?.close();
