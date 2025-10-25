@@ -2,7 +2,7 @@ export { useEffect, useRef, useState } from "preact/hooks";
 export { useSignalEffect } from "@preact/signals";
 export type { JSX } from "preact/jsx-runtime";
 
-import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.6.0/+esm";
+import mermaid from "mermaid/dist/mermaid.esm.mjs";
 import { marked } from "marked";
 
 import DOMPurify from "dompurify";
@@ -12,13 +12,15 @@ import { createHighlighter } from "shiki";
 mermaid.initialize({ startOnLoad: false });
 
 marked.use({
-  renderer: {
-    code: function (code) {
-      if (code.lang == "mermaid") {
-        return `<pre class="mermaid">${code.text}</pre>`;
-      }
-      return `<pre><code>${code.text}</code></pre>`;
-    },
+  async: true, // needed to tell marked to return a promise
+  async walkTokens(token) {
+    if (token.type === "code" && token.lang === "mermaid") {
+      const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
+      const ret = await mermaid.render(id, token.text);
+      // console.log("Rendered mermaid diagram:", token.text, ret);
+      token.type = "html";
+      token.text = ret.svg;
+    }
   },
 });
 

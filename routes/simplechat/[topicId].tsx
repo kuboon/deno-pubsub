@@ -1,23 +1,26 @@
-import { Handlers, PageProps } from "$fresh/server.ts";
+import { HttpError } from "fresh";
 import SimpleChat from "../../islands/SimpleChat.tsx";
-import { Pair, verify } from "../../lib/crypto.ts";
+import { verify } from "../../lib/crypto.ts";
+import { define } from "../../utils.ts";
 
-export const handler: Handlers = {
-  async GET(req, ctx) {
-    const topicId = ctx.params["topicId"];
-    const secret = new URL(req.url).searchParams.get("secret") || "";
+export const handler = define.handlers({
+  async GET(ctx) {
+    const topicId = ctx.params.topicId;
+    const secret = new URL(ctx.req.url).searchParams.get("secret") ?? "";
     const verified = await verify({ topicId, secret });
 
     if (verified === "invalid") {
-      return new Response("Not Found", { status: 404 });
+      throw new HttpError(404);
     }
-    return ctx.render({ topicId, secret });
+    return {
+      data: { topicId, secret },
+    };
   },
-};
+});
 
-export default function SimpleChatPage(props: PageProps<Pair>) {
-  const { topicId, secret } = props.data;
-  const url = new URL(`/simplechat/${topicId}`, props.url);
+export default define.page<typeof handler>(function SimpleChatPage(ctx) {
+  const { topicId, secret } = ctx.data;
+  const url = new URL(`/simplechat/${topicId}`, ctx.url);
   return (
     <main id="simplechat">
       <h1>SimpleChat</h1>
@@ -25,7 +28,7 @@ export default function SimpleChatPage(props: PageProps<Pair>) {
       <SimpleChat topicId={topicId} secret={secret} />
     </main>
   );
-}
+});
 
 function JoinUrl({ url }: { url: string }) {
   return (

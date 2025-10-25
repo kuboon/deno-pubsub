@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
-@plugin "daisyui";
+@plugin "daisyui" {
+  exclude: properties;
+};
 
 @import "./simplechat.css";
 @import "./presen.css";

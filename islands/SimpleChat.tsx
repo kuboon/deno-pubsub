@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { Pair } from "../lib/crypto.ts";
-import { IS_BROWSER } from "$fresh/runtime.ts";
+import { IS_BROWSER } from "fresh/runtime";
 
 type Line = { name: string; message: string; timestamp: number; mine: boolean };
 const addLine = (line: Line) => (lines: Line[]) => [...lines, line];

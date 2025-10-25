@@ -1,8 +1,8 @@
-import { Handlers } from "$fresh/server.ts";
+import { define } from "../../utils.ts";
 
 const sourceUrl = new URL("../../cli/mod.ts", import.meta.url);
 
-export const handler: Handlers = {
+export const handler = define.handlers({
   async GET() {
     const source = await Deno.readTextFile(sourceUrl);
     return new Response(source, {
@@ -12,4 +12,4 @@ export const handler: Handlers = {
       },
     });
   },
-};
+});
