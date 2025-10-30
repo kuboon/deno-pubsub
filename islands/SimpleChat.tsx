@@ -49,7 +49,7 @@ export default function SimpleChat({ topicId, secret }: Pair) {
         onSubmit={(message) => {
           const timestamp = Date.now();
           const line = { name, message, timestamp, mine: true };
-          if (ws) {
+          if (ws?.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ pub: line }));
           }
           setMessages(addLine(line));
