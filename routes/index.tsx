@@ -17,7 +17,7 @@ export default async function Home() {
         </a>
       </p>
       <p>
-        <a href={`terminal/${pair.topicId}?secret=${pair.secret}`}>
+        <a href="terminal">
           Terminal
         </a>
       </p>

@@ -2,38 +2,28 @@
   "nodeModulesDir": "auto",
   "tasks": {
     "check": "deno fmt --check . && deno lint . && deno check",
-    "start": "vite",
-    "build": "vite build",
-    "preview": "deno serve -A _fresh/server.js",
+    "vite": "vite",
+    "vbuild": "vite build",
+    "dev": "deno run -P --allow-write=.,$HOME/.cache --watch=static/,routes/ dev.ts",
+    "build": "deno run -P --allow-write=.,$HOME/.cache dev.ts build",
+    "preview": "deno serve -P _fresh/server.js",
     "update": "deno run -A -r jsr:@fresh/update ."
   },
-  "lint": {
-    "rules": {
-      "tags": [
-        "fresh",
-        "recommended"
-      ]
-    }
-  },
-  "fmt": {
-    "exclude": [
-      "AGENTS.md"
-    ]
-  },
-  "exclude": [
-    "**/_fresh/*"
-  ],
+  "lint": { "rules": { "tags": ["fresh", "recommended"] } },
+  "fmt": { "exclude": ["AGENTS.md"] },
+  "exclude": ["**/_fresh/*"],
   "imports": {
     "@/": "./",
-    "fresh": "jsr:@fresh/core@^2.1.3",
-    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.6",
+    "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@^1.0.0",
+    "fresh": "jsr:@fresh/core@^2.1.4",
+    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.7",
     "@preact/signals": "npm:@preact/signals@^2.3.2",
     "@std/assert": "jsr:@std/assert@^1.0.15",
     "@std/dotenv": "jsr:@std/dotenv@^0.225.5",
     "@std/encoding": "jsr:@std/encoding@^1.0.10",
     "@tailwindcss/typography": "npm:@tailwindcss/typography@^0.5.19",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.16",
-    "daisyui": "npm:daisyui@^5.3.10",
+    "daisyui": "npm:daisyui@^5.4.3",
     "dompurify": "npm:dompurify@^3.3.0",
     "marked": "npm:marked@^15.0.12",
     "marked-shiki": "npm:marked-shiki@^1.2.1",
@@ -44,12 +34,7 @@
     "vite": "npm:vite@^7.1.12"
   },
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.asynciterable",
-      "dom.iterable",
-      "deno.ns"
-    ],
+    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
     "jsx": "precompile",
     "jsxImportSource": "preact",
     "jsxPrecompileSkipElements": [
@@ -68,12 +53,18 @@
       "noscript",
       "template"
     ],
-    "types": [
-      "vite/client"
-    ]
+    "types": ["vite/client"]
   },
-  "unstable": [
-    "broadcast-channel",
-    "kv"
-  ]
+  "unstable": ["broadcast-channel", "kv"],
+  "permissions": {
+    "default": {
+      "env": true,
+      "net": true,
+      "sys": ["cpus", "networkInterfaces", "hostname"],
+      "read": true,
+      "ffi": ["./node_modules/.deno"],
+      "run": true,
+      "write": [".", "~/.cache"]
+    }
+  }
 }

@@ -12,7 +12,9 @@ export default function SimpleChat({ topicId, secret }: Pair) {
 
   useEffect(() => {
     if (!IS_BROWSER) return;
-    const joinUrl = document.getElementById("join-url") as HTMLInputElement | null;
+    const joinUrl = document.getElementById("join-url") as
+      | HTMLInputElement
+      | null;
     if (joinUrl) {
       joinUrl.onfocus = () => joinUrl.select();
     }

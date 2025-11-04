@@ -1,8 +1,8 @@
-import Terminal from "../../islands/Terminal.tsx";
-import { verify } from "../../lib/crypto.ts";
+import Terminal from "@/islands/Terminal.tsx";
+import { verify } from "@/lib/crypto.ts";
+import { define } from "@/utils.ts";
 import { Head } from "fresh/runtime";
 import { HttpError } from "fresh";
-import { define } from "../../utils.ts";
 
 export const handler = define.handlers({
   async GET(ctx) {

@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -A
 import { encodeBase64 } from "@std/encoding";
-import { Pair } from "../lib/crypto.ts";
 
+type Pair = { topicId: string; secret: string };
 type PubMessage = {
   pub?: { type?: string; data?: string; cols?: number; rows?: number };
   uuid?: string;

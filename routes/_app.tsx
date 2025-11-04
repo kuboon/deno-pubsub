@@ -8,6 +8,7 @@ export default define.page(function App({ Component }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>pubsub.kbn.one</title>
         <link rel="icon" href="/favicon.ico" />
+        <link rel="stylesheet" href="/styles.css" />
       </head>
       <body>
         <Component />
