@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { Pair } from "../lib/crypto.ts";
-import { IS_BROWSER } from "$fresh/runtime.ts";
+import { IS_BROWSER } from "fresh/runtime";
 
 type Line = { name: string; message: string; timestamp: number; mine: boolean };
 const addLine = (line: Line) => (lines: Line[]) => [...lines, line];
@@ -12,8 +12,12 @@ export default function SimpleChat({ topicId, secret }: Pair) {
 
   useEffect(() => {
     if (!IS_BROWSER) return;
-    document.getElementById("join-url")!.onfocus = (e) =>
-      (e.target as HTMLInputElement).select();
+    const joinUrl = document.getElementById("join-url") as
+      | HTMLInputElement
+      | null;
+    if (joinUrl) {
+      joinUrl.onfocus = () => joinUrl.select();
+    }
     if (ws && ws.readyState === WebSocket.OPEN) return;
     const ws_ = new WebSocket(`/api/topics/${topicId}?secret=${secret}`);
     setWs(ws_);
@@ -30,7 +34,7 @@ export default function SimpleChat({ topicId, secret }: Pair) {
   }, []);
 
   if (name === "") {
-    return <NameForm onSubmit={(name) => setName(name)} />;
+    return <NameForm onSubmit={setName} />;
   }
 
   return (
@@ -47,7 +51,7 @@ export default function SimpleChat({ topicId, secret }: Pair) {
         onSubmit={(message) => {
           const timestamp = Date.now();
           const line = { name, message, timestamp, mine: true };
-          if (ws) {
+          if (ws?.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ pub: line }));
           }
           setMessages(addLine(line));
