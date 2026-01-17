@@ -5,7 +5,7 @@ import {
   markdownSignal,
   pagesSignal,
 } from "./signals.ts";
-import { getPages, useRef, useSignalEffect } from "./deps.ts";
+import { getPages, mermaid, useRef, useSignalEffect } from "./deps.ts";
 
 const control = {
   right() {
@@ -52,6 +52,7 @@ export function PresentationContent({ publisher }: { publisher: boolean }) {
     contentRef.current.innerHTML = pagesSignal.value[currentPageRanged.value];
     const h1Elements = contentRef.current.getElementsByTagName("h1");
     currentSectionRanged.max.value = h1Elements.length - 1;
+    mermaid.run();
   });
 
   useSignalEffect(() => {
@@ -61,7 +62,7 @@ export function PresentationContent({ publisher }: { publisher: boolean }) {
     const target = h1Elements[currentSection];
     if (!target) return;
 
-    [...h1Elements].forEach((h1) => {
+    Array.from(h1Elements).forEach((h1) => {
       h1.classList.remove("current-section");
     });
     target.classList.add("current-section");

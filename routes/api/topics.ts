@@ -1,7 +1,6 @@
-import { Handlers } from "$fresh/server.ts";
-
 // on POST return `generate` from `crypto.ts`
 import { generate } from "../../lib/crypto.ts";
+import { Handlers } from "fresh/compat";
 
 export const handler: Handlers = {
   POST: async () => {

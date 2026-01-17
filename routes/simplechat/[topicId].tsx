@@ -1,27 +1,23 @@
-import { Handlers, PageProps } from "$fresh/server.ts";
+import { HttpError, PageProps } from "fresh";
 import SimpleChat from "../../islands/SimpleChat.tsx";
-import { Pair, verify } from "../../lib/crypto.ts";
+import { verify } from "../../lib/crypto.ts";
 
-export const handler: Handlers = {
-  async GET(req, ctx) {
-    const topicId = ctx.params["topicId"];
-    const secret = new URL(req.url).searchParams.get("secret") || "";
-    const verified = await verify({ topicId, secret });
+export default async function SimpleChatPage(props: PageProps) {
+  const topicId = props.params["topicId"];
+  const url = new URL(props.url);
+  const secret = url.searchParams.get("secret") || "";
+  const verified = await verify({ topicId, secret });
 
-    if (verified === "invalid") {
-      return new Response("Not Found", { status: 404 });
-    }
-    return ctx.render({ topicId, secret });
-  },
-};
+  if (verified === "invalid") {
+    throw new HttpError(404);
+  }
 
-export default function SimpleChatPage(props: PageProps<Pair>) {
-  const { topicId, secret } = props.data;
-  const url = new URL(`/simplechat/${topicId}`, props.url);
+  const joinUrl = new URL(`/simplechat/${topicId}`, props.url).href;
+
   return (
     <main id="simplechat">
       <h1>SimpleChat</h1>
-      {secret && <JoinUrl url={url.href} />}
+      {secret && <JoinUrl url={joinUrl} />}
       <SimpleChat topicId={topicId} secret={secret} />
     </main>
   );

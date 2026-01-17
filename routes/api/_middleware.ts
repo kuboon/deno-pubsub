@@ -1,9 +1,10 @@
-import { FreshContext } from "$fresh/server.ts";
+import { FreshContext } from "fresh";
 
 export async function handler(
-  req: Request,
   ctx: FreshContext,
 ) {
+  const req = ctx.req;
+
   if (req.headers.get("Upgrade") === "websocket") {
     return ctx.next();
   }

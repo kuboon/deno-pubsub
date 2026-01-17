@@ -1,10 +1,11 @@
 /// <reference lib="deno.unstable" />
-import { Handlers } from "$fresh/server.ts";
 import { verify } from "../../../lib/crypto.ts";
+import { Handlers } from "fresh/compat";
 
 const expireIn = 7 * 24 * 60 * 60 * 1000; // 7 days
 export const handler: Handlers = {
-  async POST(req, ctx) {
+  async POST(ctx) {
+    const req = ctx.req;
     const topicId = ctx.params["topicId"];
     const secret = new URL(req.url).searchParams.get("secret") || "";
     const verified = await verify({ topicId, secret });
@@ -17,7 +18,8 @@ export const handler: Handlers = {
     await kv.set([topicId], body, { expireIn });
     return new Response(null, { status: 201 });
   },
-  async GET(req, ctx) {
+  async GET(ctx) {
+    const req = ctx.req;
     const topicId = ctx.params["topicId"];
     const secret = new URL(req.url).searchParams.get("secret") || "";
     const verified = await verify({ topicId, secret });

@@ -16,7 +16,7 @@ export function MarkdownEditor({ publisher }: { publisher: boolean }) {
     <>
       <textarea
         ref={textRef}
-        class="textarea textarea-bordered flex-grow w-full"
+        class="textarea textarea-bordered grow w-full"
         value={markdownSignal}
         readOnly={!publisher}
         onInput={() => (locked && updateMarkdown())}
