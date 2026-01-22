@@ -28,6 +28,6 @@
     "fresh": "jsr:@fresh/core@^2.2.0"
   },
   "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "preact" },
-  "nodeModulesDir": "manual",
+  "nodeModulesDir": "auto",
   "unstable": ["broadcast-channel", "kv"]
 }
