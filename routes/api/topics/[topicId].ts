@@ -44,7 +44,12 @@ export const handler: Handlers = {
       socket.send(JSON.stringify(ev.data));
     };
     socket.onmessage = (ev) => {
-      const data = JSON.parse(ev.data);
+      let data;
+      try {
+        data = JSON.parse(ev.data);
+      } catch {
+        return;
+      }
       if (verified === "writable") {
         channel.postMessage(data);
       } else if ("pub" in data) {
