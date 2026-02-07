@@ -1,6 +1,5 @@
 import { Pair } from "../lib/crypto.ts";
 import { useEffect, useState } from "preact/hooks";
-import { IS_BROWSER } from "fresh/runtime";
 
 type Line = { name: string; message: string; timestamp: number; mine: boolean };
 const addLine = (line: Line) => (lines: Line[]) => [...lines, line];
@@ -11,7 +10,6 @@ export default function SimpleChat({ topicId, secret }: Pair) {
   const [messages, setMessages] = useState<Line[]>([]);
 
   useEffect(() => {
-    if (!IS_BROWSER) return;
     document.getElementById("join-url")!.onfocus = (e) =>
       (e.target as HTMLInputElement).select();
     if (ws && ws.readyState === WebSocket.OPEN) return;
