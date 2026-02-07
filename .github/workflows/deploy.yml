@@ -32,3 +32,4 @@ jobs:
           project: "pub-sub"
           entrypoint: "main.ts"
           root: "."
+          exclude: "**/*_test.ts"

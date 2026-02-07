@@ -1,5 +1,4 @@
 import { decodeBase64Url, encodeBase64Url } from "@std/encoding/base64url";
-import { assertEquals } from "@std/assert";
 
 export type Pair = { topicId: string; secret: string };
 export async function generate(
@@ -43,7 +42,7 @@ const algorithm = {
   hash: { name: "SHA-512" },
   length: 256,
 };
-async function generateHmacKey() {
+export async function generateHmacKey() {
   const key = await crypto.subtle.generateKey(
     algorithm,
     true,
@@ -71,22 +70,3 @@ if (import.meta.main) {
   const key = await generateHmacKey();
   console.log(`HMAC_KEY=${key}`);
 }
-
-Deno.test("crypto", async () => {
-  const keyStr = await generateHmacKey();
-  const pair = await generate(keyStr);
-  const verified = await verify(pair, keyStr);
-  assertEquals(verified, "writable");
-
-  const pair2 = { topicId: pair.topicId + "a", secret: pair.secret };
-  const verified2 = await verify(pair2, keyStr);
-  assertEquals(verified2, "invalid");
-
-  const pair3 = { topicId: pair.topicId, secret: pair.secret + "&" };
-  const verified3 = await verify(pair3, keyStr);
-  assertEquals(verified3, "invalid");
-
-  const pair4 = { topicId: pair.topicId, secret: "" };
-  const verified4 = await verify(pair4, keyStr);
-  assertEquals(verified4, "readable");
-});
