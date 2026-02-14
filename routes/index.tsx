@@ -1,7 +1,8 @@
+import { type PageProps } from "fresh";
 import { generate } from "../lib/crypto.ts";
-const origin = "https://pubsub.kbn.one";
 
-export default async function Home() {
+export default async function Home(props: PageProps) {
+  const origin = new URL(props.url).origin;
   const pair = await generate();
   return (
     <main class="prose m-8">
