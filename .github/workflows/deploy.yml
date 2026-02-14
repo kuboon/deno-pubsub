@@ -32,3 +32,4 @@ jobs:
           project: "pub-sub"
           entrypoint: "_fresh/server.js"
           root: "."
+          exclude: "**/*_test.ts"
