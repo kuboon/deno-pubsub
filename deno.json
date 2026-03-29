@@ -7,7 +7,7 @@
     "update": "deno run -A -r jsr:@fresh/update ."
   },
   "lint": { "rules": { "tags": ["fresh", "recommended"] } },
-  "exclude": ["**/_fresh/*"],
+  "exclude": ["**/_fresh/*", "**/*_test.ts"],
   "imports": {
     "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@^1.0.0",
     "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@1.0.8",
