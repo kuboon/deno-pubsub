@@ -26,10 +26,4 @@ jobs:
       - name: Build step
         run: "deno task build"
 
-      - name: Upload to Deno Deploy
-        uses: denoland/deployctl@v1
-        with:
-          project: "pub-sub"
-          entrypoint: "_fresh/server.js"
-          root: "."
-          exclude: "**/*_test.ts"
+      - run: deno deploy

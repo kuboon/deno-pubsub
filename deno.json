@@ -29,5 +29,9 @@
   },
   "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "preact" },
   "nodeModulesDir": "auto",
-  "unstable": ["broadcast-channel", "kv"]
+  "unstable": ["broadcast-channel", "kv"],
+  "deploy": {
+    "org": "kuboon-tokyo",
+    "app": "pub-sub"
+  }
 }
